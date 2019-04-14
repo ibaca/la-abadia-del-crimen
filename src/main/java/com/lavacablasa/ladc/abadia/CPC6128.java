@@ -169,12 +169,8 @@ public class CPC6128 {
 
     public synchronized void render() {
         switch (mode) {
-            case 0:
-                renderMode0();
-                break;
-            case 1:
-                renderMode1();
-                break;
+            case 0: renderMode0(); break;
+            case 1: renderMode1(); break;
         }
     }
 

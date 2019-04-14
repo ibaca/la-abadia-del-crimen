@@ -13,13 +13,10 @@ import java.util.concurrent.TimeUnit;
 //
 /////////////////////////////////////////////////////////////////////////////
 public class Timer {
-    public long getTime() {
-        return System.nanoTime();
-    }
 
-    public long getTicksPerSecond() {
-        return TimeUnit.SECONDS.toNanos(1);
-    }
+    public long getTime() { return System.currentTimeMillis();}
+
+    public long getTicksPerSecond() { return TimeUnit.SECONDS.toMillis(1);}
 
     public void sleep(int millis) {
         try {

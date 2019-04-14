@@ -46,9 +46,9 @@ import com.lavacablasa.ladc.abadia.Juego;
 //
 /////////////////////////////////////////////////////////////////////////////
 public class LaAbadiaDelCrimen {
-    private static final int NUM_INTERRUPTS_PER_SECOND = 300;
-    private static final int NUM_INTERRUPTS_PER_VIDEO_UPDATE = 6;
-    private static final int NUM_INTERRUPTS_PER_LOGIC_UPDATE = 1;
+    private static final int INTERRUPTS_PER_SECOND = 300;
+    private static final int INTERRUPTS_PER_VIDEO_UPDATE = 2;
+    private static final int INTERRUPTS_PER_LOGIC_UPDATE = 1;
 
     // fields
     private final GameContext context;
@@ -64,82 +64,35 @@ public class LaAbadiaDelCrimen {
         byte[] diskData = context.load("/abadia.dsk");
         byte[] memoryData = readDiskImageToMemory(diskData);
 
-        // creates the timing handler
-        timingHandler = new TimingHandler(new Timer(),
-                NUM_INTERRUPTS_PER_SECOND,
-                NUM_INTERRUPTS_PER_VIDEO_UPDATE,
-                NUM_INTERRUPTS_PER_LOGIC_UPDATE);
-
-        // crea el objeto del juego
+        timingHandler = new TimingHandler(new Timer(), INTERRUPTS_PER_VIDEO_UPDATE, INTERRUPTS_PER_LOGIC_UPDATE);
         abadiaGame = new Juego(memoryData, cpc6128, context, timingHandler);
-
-        // creates the async thread
         asyncThread = new Thread(abadiaGame::run);
     }
 
     private byte[] readDiskImageToMemory(byte[] diskImageData) {
         byte[] auxBuffer = new byte[0xff00];
-
-        // reserva espacio para los datos del juego
         byte[] memoryData = new byte[0x24000];
-
-        // extrae los datos del juego de la imagen del disco
         DskReader dsk = new DskReader(diskImageData);
 
-        // obtiene los datos de las pistas 0x01-0x11
-        for (int i = 0x01; i <= 0x11; i++) {
-            dsk.getTrackData(i, auxBuffer, (i - 0x01) * 0x0f00, 0x0f00);
-        }
-
-        // reordena los datos y los copia al destino
+        for (int i = 0; i <= 16; i++) dsk.getTrackData(i + 0x01, auxBuffer, i * 0x0f00, 0x0f00);
         reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x00000, 0x4000);    // abadia0.bin
         reOrderAndCopy(auxBuffer, 0x4000, memoryData, 0x0c000, 0x4000);    // abadia3.bin
         reOrderAndCopy(auxBuffer, 0x8000, memoryData, 0x20000, 0x4000);    // abadia8.bin
         reOrderAndCopy(auxBuffer, 0xc000, memoryData, 0x04100, 0x3f00);    // abadia1.bin
-
-        // obtiene los datos de las pistas 0x12-0x16
-        for (int i = 0x12; i <= 0x16; i++) {
-            dsk.getTrackData(i, auxBuffer, (i - 0x12) * 0x0f00, 0x0f00);
-        }
-
-        // reordena los datos y los copia al destino
+        for (int i = 0; i <= 4; i++) dsk.getTrackData(i + 0x12, auxBuffer, i * 0x0f00, 0x0f00);
         reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x1c000, 0x4000);    // abadia7.bin
-
-        // obtiene los datos de las pistas 0x17-0x1b
-        for (int i = 0x17; i <= 0x1b; i++) {
-            dsk.getTrackData(i, auxBuffer, (i - 0x17) * 0x0f00, 0x0f00);
-        }
-
-        // reordena los datos y los copia al destino
+        for (int i = 0; i <= 4; i++) dsk.getTrackData(i + 0x17, auxBuffer, i * 0x0f00, 0x0f00);
         reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x18000, 0x4000);    // abadia6.bin
-
-        // obtiene los datos de las pistas 0x1c-0x21
-        for (int i = 0x1c; i <= 0x21; i++) {
-            dsk.getTrackData(i, auxBuffer, (i - 0x1c) * 0x0f00, 0x0f00);
-        }
-
-        // reordena los datos y los copia al destino
+        for (int i = 0; i <= 5; i++) dsk.getTrackData(i + 0x1c, auxBuffer, i * 0x0f00, 0x0f00);
         reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x14000, 0x4000);    // abadia5.bin
-
-        // obtiene los datos de las pistas 0x21-0x25
-        for (int i = 0x21; i <= 0x25; i++) {
-            dsk.getTrackData(i, auxBuffer, (i - 0x21) * 0x0f00, 0x0f00);
-        }
-
-        // reordena los datos y los copia al destino
+        for (int i = 0; i <= 4; i++) dsk.getTrackData(i + 0x21, auxBuffer, i * 0x0f00, 0x0f00);
         reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x08000, 0x4000);    // abadia2.bin
 
         return memoryData;
     }
 
     private void reOrderAndCopy(byte[] src, int srcPos, byte[] dst, int dstPos, int size) {
-        for (int i = 0; i < size; i++) {
-            dst[dstPos + size - i - 1] = src[srcPos + i];
-        }
-    }
-
-    public void end() {
-        asyncThread.interrupt();
+        for (int i = 0; i < size; i++) dst[dstPos + size - i - 1] = src[srcPos + i];
     }
 
     public void run() {
@@ -148,27 +101,13 @@ public class LaAbadiaDelCrimen {
 
         // main sync loop
         while (true) {
-            // waits if necessary before processing this interrupt
-            timingHandler.waitThisInterrupt();
-            // if we have to process game logic
-            if (timingHandler.processLogicThisInterrupt()) {
-                // execute sync game logic
-                abadiaGame.runSync();
+            timingHandler.sleep((int) ((1. / INTERRUPTS_PER_SECOND) * 1000.));
+            timingHandler.interrupt();
+            if (timingHandler.processLogicInterrupt()) abadiaGame.runSync();
+            if (timingHandler.processVideoInterrupt()) {
+                cpc6128.render();
+                context.getGfxOutput().render();
             }
-
-            // if we have to process video
-            if (timingHandler.processVideoThisInterrupt()) {
-                boolean skipVideo = timingHandler.skipVideoThisInterrupt();
-                if (!skipVideo) {
-                    // render game screen
-                    GfxOutput gfxOutput = context.getGfxOutput();
-                    cpc6128.render();
-                    gfxOutput.render();
-                }
-            }
-
-            // end this interrupt processing
-            timingHandler.endThisInterrupt();
         }
     }
 }

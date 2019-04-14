@@ -14,8 +14,8 @@ abstract class Monje extends PersonajeConIA {
             new DatosFotograma(0x0000, 0x05, 0x21)
     };
 
-    int[] datosCara = new int[2];				// dirección de los gráficos de la cara
-    SpriteMonje sprMonje;						// sprite del monje
+    int[] datosCara = new int[2];                // dirección de los gráficos de la cara
+    SpriteMonje sprMonje;                        // sprite del monje
 
     Monje(Juego juego, SpriteMonje sprite) {
         super(juego, sprite);
@@ -32,8 +32,7 @@ abstract class Monje extends PersonajeConIA {
     }
 
     // calcula el fotograma que hay que poner al monje
-    DatosFotograma calculaFotograma()
-    {
+    DatosFotograma calculaFotograma() {
         // obtiene la orientación del personaje según la posición de la cámara
         int oriCamara = juego.motor.ajustaOrientacionSegunCamara(orientacion);
 
@@ -43,7 +42,7 @@ abstract class Monje extends PersonajeConIA {
         // selecciona un fotograma dependiendo de la orientación y de si el personaje va hacia la derecha o a la izquierda
         int numAnim = (((oriCamara + 1) & 0x02) << 1) | contadorAnimacion;
 
-        assert(numAnim < numFotogramas);
+        assert (numAnim < numFotogramas);
 
         // modifica los datos del fotograma con la dirección de la cara del personaje
         animacion[numAnim].dirGfx = datosCara[(numAnim & 0x04) != 0 ? 1 : 0];

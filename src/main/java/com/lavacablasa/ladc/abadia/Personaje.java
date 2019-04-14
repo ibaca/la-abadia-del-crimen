@@ -19,30 +19,30 @@ abstract class Personaje extends EntidadJuego {
 
     // tabla para el cálculo del desplazamiento, según la animación y la cámara de un personaje
     private static final int[][][] difPosAnimCam = {
-        {
-            { 0, 0,  -1, -2,  -1, +2,  -2,  0,  +1, +2,   0,  0,   0, -2 },
-            { 0, 0,  -1, +2,  +1, +2,   0, +4,  -1, +2,  -2, +6,  -2,  0 },
-            { 0, 0,  +1, +2,  -1, +2,   0, +4,  +1, +2,  +2, +6,  +2,  0 },
-            { 0, 0,  +1, -2,  +1, +2,  +2,  0,  -1, +2,   0,  0,   0, -2 }
-        },
-        {
-            { 0, 0,  -1, -2,  -1, +2,  -2,  0,  -1, -2,  -2, -4,  -2, -6 },
-            { 0, 0,  -1, +2,  -1, -2,  -2,  0,  -1, +2,  -2, +6,  -2,  0 },
-            { 0, 0,  +1, +2,  -1, +2,   0, +4,  -1, -2,   0, +2,   0, -4 },
-            { 0, 0,  +1, -2,  -1, -2,   0, -4,  -1, +2,   0,  0,   0, -2 }
-        },
-        {
-            { 0, 0,  -1, -2,  +1, -2,   0, -4,  -1, -2,  -2, -4,  -2, -6 },
-            { 0, 0,  -1, +2,  -1, -2,  -2,  0,  +1, -2,   0, +2,   0, -3 },
-            { 0, 0,  +1, +2,  +1, -2,  +2,  0,  -1, -2,   0, +2,   0, -4 },
-            { 0, 0,  +1, -2,  -1, -2,   0, -4,  +1, -2,  +2, -4,  +2, -6 }
-        },
-        {
-            { 0, 0,  -1, -2,  +1, -2,   0, -4,  +1, +2,   0,  0,   0, -2 },
-            { 0, 0,  -1, +2,  +1, +2,   0, +4,  +1, -2,   0, +2,   0, -4 },
-            { 0, 0,  +1, +2,  +1, -2,  +2,  0,  +1, +2,  +2, +6,  +2,  0 },
-            { 0, 0,  +1, -2,  +1, +2,  +2,  0,  +1, -2,  +2, -4,  +2, -6 }
-        }
+            {
+                    { 0, 0, -1, -2, -1, +2, -2, 0, +1, +2, 0, 0, 0, -2 },
+                    { 0, 0, -1, +2, +1, +2, 0, +4, -1, +2, -2, +6, -2, 0 },
+                    { 0, 0, +1, +2, -1, +2, 0, +4, +1, +2, +2, +6, +2, 0 },
+                    { 0, 0, +1, -2, +1, +2, +2, 0, -1, +2, 0, 0, 0, -2 }
+            },
+            {
+                    { 0, 0, -1, -2, -1, +2, -2, 0, -1, -2, -2, -4, -2, -6 },
+                    { 0, 0, -1, +2, -1, -2, -2, 0, -1, +2, -2, +6, -2, 0 },
+                    { 0, 0, +1, +2, -1, +2, 0, +4, -1, -2, 0, +2, 0, -4 },
+                    { 0, 0, +1, -2, -1, -2, 0, -4, -1, +2, 0, 0, 0, -2 }
+            },
+            {
+                    { 0, 0, -1, -2, +1, -2, 0, -4, -1, -2, -2, -4, -2, -6 },
+                    { 0, 0, -1, +2, -1, -2, -2, 0, +1, -2, 0, +2, 0, -3 },
+                    { 0, 0, +1, +2, +1, -2, +2, 0, -1, -2, 0, +2, 0, -4 },
+                    { 0, 0, +1, -2, -1, -2, 0, -4, +1, -2, +2, -4, +2, -6 }
+            },
+            {
+                    { 0, 0, -1, -2, +1, -2, 0, -4, +1, +2, 0, 0, 0, -2 },
+                    { 0, 0, -1, +2, +1, +2, 0, +4, +1, -2, 0, +2, 0, -4 },
+                    { 0, 0, +1, +2, +1, -2, +2, 0, +1, +2, +2, +6, +2, 0 },
+                    { 0, 0, +1, -2, +1, +2, +2, 0, +1, -2, +2, -4, +2, -6 }
+            }
     };
 
     private static final int FLIP_OFFSET = 0xc000;
@@ -66,7 +66,6 @@ abstract class Personaje extends EntidadJuego {
 
     DatosFotograma[] animacion;     // tabla con los datos para las animaciones
     int numFotogramas;              // número de fotogramas de la tabla de animaciones
-
 
     Personaje(Juego juego, Sprite sprite) {
         super(juego, sprite);
@@ -98,20 +97,19 @@ abstract class Personaje extends EntidadJuego {
     // actualización del entorno cuando un personaje es visible en la pantalla actual
     /////////////////////////////////////////////////////////////////////////////
 
-    void actualizaPosPantSprite(int posXPant, int posYPant, int profundidad)
-    {
+    void actualizaPosPantSprite(int posXPant, int posYPant, int profundidad) {
         int entrada = 0;
 
         // si el personaje ocupa sólo una posición porque está en un desnivel, hay que tener en cuenta varios casos
-        if (enDesnivel){
+        if (enDesnivel) {
             entrada += 2;
 
-            if (!giradoEnDesnivel){
+            if (!giradoEnDesnivel) {
                 entrada += 2;
 
-                if ((contadorAnimacion & 0x01) == 0x01){
+                if ((contadorAnimacion & 0x01) == 0x01) {
                     entrada += 1;
-                    if (bajando){
+                    if (bajando) {
                         entrada += 1;
                     }
                 }
@@ -125,19 +123,18 @@ abstract class Personaje extends EntidadJuego {
 
         // actualiza la posición en pantalla del sprite asociado al personaje dependiendo de la cámara
         int oriAjustada = juego.motor.ajustaOrientacionSegunCamara(orientacion);
-        sprite.posXPant = posXPant + despX + difPosAnimCam[juego.motor.oriCamara][oriAjustada][2*entrada];
-        sprite.posYPant = posYPant + despY + difPosAnimCam[juego.motor.oriCamara][oriAjustada][2*entrada + 1];
+        sprite.posXPant = posXPant + despX + difPosAnimCam[juego.motor.oriCamara][oriAjustada][2 * entrada];
+        sprite.posYPant = posYPant + despY + difPosAnimCam[juego.motor.oriCamara][oriAjustada][2 * entrada + 1];
 
         // si el sprite no es visible, fija también la posición anterior
-        if (!sprite.esVisible){
+        if (!sprite.esVisible) {
             sprite.oldPosXPant = sprite.posXPant;
             sprite.oldPosYPant = sprite.posYPant;
         }
     }
 
     // actualiza la posición y la animación del sprite dependiendo de su posición con respecto a la cámara
-    void notificaVisibleEnPantalla(int posXPant, int posYPant, int profundidad)
-    {
+    void notificaVisibleEnPantalla(int posXPant, int posYPant, int profundidad) {
         // actualiza la posición en pantalla del sprite
         actualizaPosPantSprite(posXPant, posYPant, profundidad);
 
@@ -151,23 +148,21 @@ abstract class Personaje extends EntidadJuego {
     /////////////////////////////////////////////////////////////////////////////
 
     // calcula el fotograma que hay que poner al personaje
-    DatosFotograma calculaFotograma()
-    {
+    DatosFotograma calculaFotograma() {
         // obtiene la orientación del personaje según la posición de la cámara
         int oriCamara = juego.motor.ajustaOrientacionSegunCamara(orientacion);
 
         // selecciona un fotograma dependiendo de la orientación y de si el personaje va hacia la derecha o a la izquierda
         int numAnim = (((oriCamara + 1) & 0x02) << 1) | contadorAnimacion;
 
-        assert(numAnim < numFotogramas);
+        assert (numAnim < numFotogramas);
 
         // devuelve los datos del fotograma de la animación del personaje
         return animacion[numAnim];
     }
 
     // actualiza la animación del sprite con el fotograma que se le pasa
-    void actualizaAnimacion(DatosFotograma df, int profundidad)
-    {
+    void actualizaAnimacion(DatosFotograma df, int profundidad) {
         sprite.esVisible = true;
         sprite.haCambiado = true;
         sprite.profundidad = profundidad;
@@ -176,7 +171,7 @@ abstract class Personaje extends EntidadJuego {
         int oriCamara = juego.motor.ajustaOrientacionSegunCamara(orientacion);
 
         // comprueba si hay que girar los gráficos del personaje por el cambio de la orientación del personaje
-        if ((((oriCamara >> 1) & 0x01) ^ ((flipX) ? 1 : 0)) != 0){
+        if ((((oriCamara >> 1) & 0x01) ^ ((flipX) ? 1 : 0)) != 0) {
             flipX = !flipX;
         }
 
@@ -184,7 +179,7 @@ abstract class Personaje extends EntidadJuego {
         sprite.ancho = df.ancho;
         sprite.alto = df.alto;
 
-        if (flipX){
+        if (flipX) {
             sprite.despGfx += FLIP_OFFSET;
         }
 
@@ -192,8 +187,7 @@ abstract class Personaje extends EntidadJuego {
     }
 
     // avanza la animación del sprite y ajusta según la cámara
-    void avanzaAnimacion()
-    {
+    void avanzaAnimacion() {
         // avanza el contador de la animación
         contadorAnimacion = (contadorAnimacion + 1) & 0x03;
 
@@ -202,12 +196,11 @@ abstract class Personaje extends EntidadJuego {
     }
 
     // actualiza la posición y dimensiones del sprite del personaje según la animación y la cámara
-    void actualizaSprite()
-    {
+    void actualizaSprite() {
         // comprueba si el sprite es visible en la pantalla actual
         if (!juego.motor.actualizaCoordCamara(this)) {
             // si el sprite era visible, lo hace desaparecer
-            if (sprite.esVisible){
+            if (sprite.esVisible) {
                 sprite.desaparece = true;
                 sprite.haCambiado = true;
                 sprite.profundidad = 0;
@@ -221,8 +214,7 @@ abstract class Personaje extends EntidadJuego {
     // métodos relacionados con el movimiento del personaje
     /////////////////////////////////////////////////////////////////////////////
 
-    void mueve()
-    {
+    void mueve() {
         // pone la posición y dimensiones actuales como posición y dimensiones antiguas
         sprite.preparaParaCambio();
 
@@ -237,9 +229,8 @@ abstract class Personaje extends EntidadJuego {
     }
 
     // dependiendo de como esté la animación del personaje, avanza la animación o realiza un movimiento
-    void avanzaAnimacionOMueve()
-    {
-        if ((contadorAnimacion & 0x01) == 0x01){
+    void avanzaAnimacionOMueve() {
+        if ((contadorAnimacion & 0x01) == 0x01) {
             avanzaAnimacion();
         } else {
             ejecutaMovimiento();
@@ -247,34 +238,33 @@ abstract class Personaje extends EntidadJuego {
     }
 
     // si el personaje puede avanzar en la orientación actual, avanza
-    void trataDeAvanzar(int difAltura1, int difAltura2, int avanceX, int avanceY)
-    {
+    void trataDeAvanzar(int difAltura1, int difAltura2, int avanceX, int avanceY) {
         bajando = false;
 
         // si el personaje ocupa 4 posiciones
-        if (!enDesnivel){
+        if (!enDesnivel) {
             // si se quiere subir o bajar, cambia la altura e indica que el personaje está en desnivel
-            if (difAltura1 == 1){
+            if (difAltura1 == 1) {
                 altura++;
                 enDesnivel = true;
-            } else if (difAltura1 == -1){
+            } else if (difAltura1 == -1) {
                 altura--;
                 enDesnivel = true;
                 bajando = true;
-            } else if (difAltura1 != 0){
+            } else if (difAltura1 != 0) {
                 // si se quiere pasar a un desnivel de más de una posición, sale
                 return;
             }
 
             // si se anda por una zona sin desnivel, actualiza la posición y la animación del personaje según hacia donde se avanza
-            if (difAltura1 == 0){
+            if (difAltura1 == 0) {
                 incrementaPos(avanceX, avanceY);
                 avanzaAnimacion();
             } else {
                 // si se va a subir o a bajar
                 incrementaPos(avanceX, avanceY);
 
-                if (cambioCentro()){
+                if (cambioCentro()) {
                     incrementaPos(avanceX, avanceY);
                 }
                 avanzaAnimacion();
@@ -285,11 +275,11 @@ abstract class Personaje extends EntidadJuego {
             // si se quiere avanzar a una posición donde hay un personaje, sale
             if ((difAltura2 == 0x10) || (difAltura2 == 0x20)) return;
 
-            if (!giradoEnDesnivel){
+            if (!giradoEnDesnivel) {
                 // si se quiere subir o bajar, cambia la altura
-                if (difAltura1 == 1){
+                if (difAltura1 == 1) {
                     altura++;
-                } else if (difAltura1 == -1){
+                } else if (difAltura1 == -1) {
                     altura--;
                     bajando = true;
                 } else {
@@ -298,12 +288,12 @@ abstract class Personaje extends EntidadJuego {
                 }
 
                 // si las 2 posiciones que hay avanzando tienen la misma altura, indica que ya no está en desnivel
-                if (difAltura1 == difAltura2){
+                if (difAltura1 == difAltura2) {
                     enDesnivel = false;
 
                     incrementaPos(avanceX, avanceY);
 
-                    if (!cambioCentro()){
+                    if (!cambioCentro()) {
                         incrementaPos(avanceX, avanceY);
                     }
                     avanzaAnimacion();
@@ -324,19 +314,17 @@ abstract class Personaje extends EntidadJuego {
     }
 
     // actualiza la posición del personaje según el avance que se le pasa
-    void incrementaPos(int avanceX, int avanceY)
-    {
+    void incrementaPos(int avanceX, int avanceY) {
         posX += avanceX;
         posY += avanceY;
     }
 
     // gira el personaje a la derecha o a la izquierda
-    void gira(int difOrientacion)
-    {
+    void gira(int difOrientacion) {
         contadorAnimacion = 0;
 
         // si está en desnivel, obtiene si avanza en el sentido del desnivel o no
-        if (enDesnivel){
+        if (enDesnivel) {
             giradoEnDesnivel = !giradoEnDesnivel;
         }
 
@@ -348,8 +336,7 @@ abstract class Personaje extends EntidadJuego {
     }
 
     // si la orientación del personaje es DERECHA o ARRIBA devuelve false, en otro caso devuelve true
-    boolean cambioCentro()
-    {
+    boolean cambioCentro() {
         return (orientacion == ABAJO) || (orientacion == IZQUIERDA);
     }
 
@@ -358,8 +345,7 @@ abstract class Personaje extends EntidadJuego {
     /////////////////////////////////////////////////////////////////////////////
 
     // indica si se puede dejar un objeto. Si no se puede, devuelve -1. En otro caso devuelve el número de objeto que puede dejar
-    int puedeDejarObjeto(int[] posicion)
-    {
+    int puedeDejarObjeto(int[] posicion) {
         // inicia la máscara para el primer objeto
         int mascara = 1 << Juego.numObjetos;
 
@@ -369,15 +355,15 @@ abstract class Personaje extends EntidadJuego {
         contadorObjetos++;
 
         // recorre los objetos del juego
-        for (int i = 0; i < Juego.numObjetos; i++){
+        for (int i = 0; i < Juego.numObjetos; i++) {
             mascara = mascara >> 1;
 
             // si no se tiene el objeto que actual, pasa al siguiente
             if ((objetos & mascara) == 0) continue;
 
             // obtiene la posición en la que se dejará el objeto
-            posicion[0] = posX + 2* MotorGrafico.tablaDespOri[orientacion][0];
-            posicion[1] = posY + 2* MotorGrafico.tablaDespOri[orientacion][1];
+            posicion[0] = posX + 2 * MotorGrafico.tablaDespOri[orientacion][0];
+            posicion[1] = posY + 2 * MotorGrafico.tablaDespOri[orientacion][1];
             posicion[2] = altura;
             int alturaBasePlantaObj = juego.motor.obtenerAlturaBasePlanta(altura);
             int alturaRelativa = altura - alturaBasePlantaObj;
@@ -385,13 +371,13 @@ abstract class Personaje extends EntidadJuego {
             boolean estaEnPantallaActual = false;
 
             // si el objeto está en la misma planta que la que se muestra en pantalla
-            if (alturaBasePlantaObj == juego.motor.rejilla.minAltura){
+            if (alturaBasePlantaObj == juego.motor.rejilla.minAltura) {
                 RejillaPantalla rejilla = juego.motor.rejilla;
 
                 int[] posObjRejilla = new int[2];
 
                 // comprueba si la posición en la que se deja el objeto está en la rejilla de pantalla que se muestra
-                if (rejilla.ajustaAPosRejilla(posicion[0], posicion[1], posObjRejilla)){
+                if (rejilla.ajustaAPosRejilla(posicion[0], posicion[1], posObjRejilla)) {
                     int altPos = rejilla.bufAlturas[posObjRejilla[1]][posObjRejilla[0]] & 0xff;
 
                     // si hay algún personaje en la posición en la que se quiere dejar el objeto, sale
@@ -419,7 +405,7 @@ abstract class Personaje extends EntidadJuego {
             }
 
             // si el objeto no se va a dejar en la pantalla que se muestra actualmente, se deja en la posición del personaje
-            if (!estaEnPantallaActual){
+            if (!estaEnPantallaActual) {
                 posicion[0] = posX;
                 posicion[1] = posY;
                 posicion[2] = altura;
@@ -438,20 +424,23 @@ abstract class Personaje extends EntidadJuego {
     /////////////////////////////////////////////////////////////////////////////
 
     // marca la posición ocupada por el personaje en el buffer de alturas
-    void marcaPosicion(RejillaPantalla rejilla, int valor)
-    {
+    void marcaPosicion(RejillaPantalla rejilla, int valor) {
         int[] posRejilla = new int[2];
 
         // si el personaje está en las 20x20 posiciones centrales de la rejilla, marca las posiciones que ocupa
-        if (rejilla.estaEnRejillaCentral(this, posRejilla)){
+        if (rejilla.estaEnRejillaCentral(this, posRejilla)) {
             // marca la posición (x, y) en el buffer de alturas
-            rejilla.bufAlturas[posRejilla[1]][posRejilla[0]] = (byte) ((rejilla.bufAlturas[posRejilla[1]][posRejilla[0]] & 0x0f) | valor);
+            rejilla.bufAlturas[posRejilla[1]][posRejilla[0]] = (byte) (
+                    (rejilla.bufAlturas[posRejilla[1]][posRejilla[0]] & 0x0f) | valor);
 
             // si el personaje no está en un desnivel, ocupa 4 posiciones ((x, y)(x-1, y)(x, y-1)(x-1, y-1))
-            if (!enDesnivel){
-                rejilla.bufAlturas[posRejilla[1]][posRejilla[0] - 1] = (byte) ((rejilla.bufAlturas[posRejilla[1]][posRejilla[0] - 1] & 0x0f) | valor);
-                rejilla.bufAlturas[posRejilla[1] - 1][posRejilla[0]] = (byte) ((rejilla.bufAlturas[posRejilla[1] - 1][posRejilla[0]] & 0x0f) | valor);
-                rejilla.bufAlturas[posRejilla[1] - 1][posRejilla[0] - 1] = (byte) ((rejilla.bufAlturas[posRejilla[1] - 1][posRejilla[0] - 1] & 0x0f) | valor);
+            if (!enDesnivel) {
+                rejilla.bufAlturas[posRejilla[1]][posRejilla[0] - 1] = (byte) (
+                        (rejilla.bufAlturas[posRejilla[1]][posRejilla[0] - 1] & 0x0f) | valor);
+                rejilla.bufAlturas[posRejilla[1] - 1][posRejilla[0]] = (byte) (
+                        (rejilla.bufAlturas[posRejilla[1] - 1][posRejilla[0]] & 0x0f) | valor);
+                rejilla.bufAlturas[posRejilla[1] - 1][posRejilla[0] - 1] = (byte) (
+                        (rejilla.bufAlturas[posRejilla[1] - 1][posRejilla[0] - 1] & 0x0f) | valor);
             }
         }
     }

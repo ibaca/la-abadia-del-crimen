@@ -1,6 +1,5 @@
 package com.lavacablasa.ladc;
 
-
 import com.lavacablasa.ladc.core.GameContext;
 import com.lavacablasa.ladc.core.LaAbadiaDelCrimen;
 import com.lavacablasa.ladc.swing.SwingGameContext;

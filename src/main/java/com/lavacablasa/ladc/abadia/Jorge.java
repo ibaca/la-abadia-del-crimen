@@ -14,8 +14,8 @@ class Jorge extends Monje {
     /////////////////////////////////////////////////////////////////////////////
 
     private static final PosicionJuego[] posicionesPredef = {
-        new PosicionJuego(DERECHA, 0xbc, 0x15, 0x02),	// celda de los monjes
-        new PosicionJuego(DERECHA, 0x19, 0x2b, 0x1a)	// habitación iluminada de la biblioteca
+            new PosicionJuego(DERECHA, 0xbc, 0x15, 0x02),    // celda de los monjes
+            new PosicionJuego(DERECHA, 0x19, 0x2b, 0x1a)    // habitación iluminada de la biblioteca
     };
 
     boolean estaActivo;     // indica si el personaje está activo o no
@@ -48,32 +48,31 @@ class Jorge extends Monje {
     //		0x10 . estado en el que jorge llega al sitio donde se muere y se completa la investigación
     //		0x1e . estado en el que el abad está presentado a guillermo ante jorge
     //		0x1f . estado en el que jorge habla con guillermo después de que hayan sido presentados
-    void piensa()
-    {
+    void piensa() {
         // si jorge no está activo, sale
-        if (!estaActivo){
+        if (!estaActivo) {
             juego.logica.buscRutas.seBuscaRuta = false;
 
             return;
         }
 
         // si es el tercer día
-        if (juego.logica.dia == 3){
+        if (juego.logica.dia == 3) {
             // en prima, se queda quieto
-            if (juego.logica.momentoDia == PRIMA){
+            if (juego.logica.momentoDia == PRIMA) {
                 juego.logica.buscRutas.seBuscaRuta = false;
 
                 return;
             }
 
             // en tercia, conversa con guillermo
-            if (juego.logica.momentoDia == TERCIA){
+            if (juego.logica.momentoDia == TERCIA) {
                 // no se mueve del sitio
                 juego.logica.buscRutas.seBuscaRuta = false;
 
                 // si el abad ha terminado de presentar a guillermo, cambia de estado
-                if (estado == 0x1e){
-                    if (!juego.gestorFrases.mostrandoFrase){
+                if (estado == 0x1e) {
+                    if (!juego.gestorFrases.mostrandoFrase) {
                         estado = 0x1f;
                     }
 
@@ -81,8 +80,8 @@ class Jorge extends Monje {
                 }
 
                 // si el abad ha terminado de presentar a guillermo, éste le da la bienvenida
-                if (estado == 0x1f){
-                    if (estaCerca(juego.logica.guillermo)){
+                if (estado == 0x1f) {
+                    if (estaCerca(juego.logica.guillermo)) {
                         // pone en el marcador la frase SED BIENVENIDO, VENERABLE HERMANO; Y ESCUCHAD LO QUE OS DIGO. LAS VIAS DEL ANTICRISTO SON LENTAS Y TORTUOSAS. LLEGA CUANDO MENOS LO ESPERAS. NO DESPERDICIEIS LOS ULTIMOS DIAS
                         juego.gestorFrases.muestraFrase(0x32);
 
@@ -94,7 +93,7 @@ class Jorge extends Monje {
                 }
 
                 // si jorge está cerca de guillermo, el abad presenta a guillermo
-                if (estaCerca(juego.logica.guillermo)){
+                if (estaCerca(juego.logica.guillermo)) {
                     // pone en el marcador la frase VENERABLE JORGE, EL QUE ESTA ANTE VOS ES FRAY GUILLERMO, NUESTRO HUESPED
                     juego.gestorFrases.muestraFraseYa(0x31);
 
@@ -105,12 +104,12 @@ class Jorge extends Monje {
             }
 
             // si es sexta, se va a la celda de los monjes
-            if (juego.logica.momentoDia == SEXTA){
+            if (juego.logica.momentoDia == SEXTA) {
                 aDondeVa = 0;
                 estado = 0;
 
                 // si ha llegado a su celda, pasa a estar inactivo
-                if (aDondeHaLlegado == 0){
+                if (aDondeHaLlegado == 0) {
                     estaActivo = false;
                 }
 
@@ -119,10 +118,10 @@ class Jorge extends Monje {
         }
 
         // si es el sexto o séptimo día
-        if (juego.logica.dia >= 6){
-            if (estado == 0x0b){
+        if (juego.logica.dia >= 6) {
+            if (estado == 0x0b) {
                 // si ha terminado de decir la frase, deja el libro para que lo coja guillermo
-                if (!juego.gestorFrases.mostrandoFrase){
+                if (!juego.gestorFrases.mostrandoFrase) {
                     juego.logica.dejaObjeto(this);
 
                     estado = 0x0c;
@@ -133,9 +132,9 @@ class Jorge extends Monje {
                 return;
             }
 
-            if (estado == 0x0c){
+            if (estado == 0x0c) {
                 // si guillermo ha cogido el libro, le informa de que libro es y pasa al siguiente estado
-                if ((juego.logica.guillermo.objetos & LIBRO) == LIBRO){
+                if ((juego.logica.guillermo.objetos & LIBRO) == LIBRO) {
                     // pone en el marcador la frase ES EL COENA CIPRIANI DE ARISTOTELES. AHORA COMPRENDEREIS POR QUE TENIA QUE PROTEGERLO. CADA PALABRA ESCRITA POR EL FILOSOFO HA DESTRUIDO UNA PARTE DEL SABER DE LA CRISTIANDAD. SE QUE HE ACTUADO SIGUIENDO LA VOLUNTAD DEL SEÑOR... LEEDLO, PUES, FRAY GUILLERMO. DESPUES TE LO MOSTRATE A TI MUCHACHO
                     juego.gestorFrases.muestraFrase(0x2e);
 
@@ -148,13 +147,13 @@ class Jorge extends Monje {
 
             }
 
-            if (estado == 0x0d){
+            if (estado == 0x0d) {
                 // si guillermo no tiene los guantes
-                if ((juego.logica.guillermo.objetos & GUANTES) == 0){
+                if ((juego.logica.guillermo.objetos & GUANTES) == 0) {
                     // si guillermo no ha muerto todavía
-                    if (!juego.logica.haFracasado){
+                    if (!juego.logica.haFracasado) {
                         // si ha salido de la pantalla de detrás del espejo o ha terminado la frase, mata a guillermo
-                        if ((juego.motor.numPantalla == 0x72) || (!juego.gestorFrases.mostrandoFrase)){
+                        if ((juego.motor.numPantalla == 0x72) || (!juego.gestorFrases.mostrandoFrase)) {
                             juego.logica.cntLeeLibroSinGuantes = 0xff;
                         } else {
                             juego.logica.cntLeeLibroSinGuantes = 0x01;
@@ -164,7 +163,7 @@ class Jorge extends Monje {
                     juego.logica.buscRutas.seBuscaRuta = false;
                 } else {
                     // si guillermo tenía los guantes y ha terminado de mostrar la frase, adso le informa de que guillermo tenía puestos los guantes
-                    if (!juego.gestorFrases.mostrandoFrase){
+                    if (!juego.gestorFrases.mostrandoFrase) {
                         // pone en el marcador la frase VENERABLE JORGE, VOIS NO PODEIS VERLO, PERO MI MAESTRO LLEVA GUANTES.  PARA SEPARAR LOS FOLIOS TENDRIA QUE HUMEDECER LOS DEDOS EN LA LENGUA, HASTA QUE HUBIERA RECIBIDO SUFICIENTE VENENO
                         juego.gestorFrases.muestraFrase(0x23);
 
@@ -178,8 +177,8 @@ class Jorge extends Monje {
 
             }
 
-            if (estado == 0x0e){
-                if (!juego.gestorFrases.mostrandoFrase){
+            if (estado == 0x0e) {
+                if (!juego.gestorFrases.mostrandoFrase) {
                     // inicia el contador para salir huyendo
                     contadorHuida = 0;
 
@@ -195,11 +194,11 @@ class Jorge extends Monje {
                 return;
             }
 
-            if (estado == 0x0f){
+            if (estado == 0x0f) {
                 contadorHuida++;
 
                 // si el contador para salir huyendo ha llegado al límite, jorge huye
-                if (contadorHuida == 0x28){
+                if (contadorHuida == 0x28) {
                     // oculta el área de juego
                     juego.limpiaAreaJuego(3);
 
@@ -230,9 +229,10 @@ class Jorge extends Monje {
                 return;
             }
 
-            if (estado == 0x10){
+            if (estado == 0x10) {
                 // si jorge ha llegado al sitio donde se muere y guillermo también, se ha completado la investigación
-                if ((aDondeHaLlegado == 1) && (juego.motor.numPantalla == 0x67) && (juego.logica.guillermo.altura < 0x1e)){
+                if ((aDondeHaLlegado == 1) && (juego.motor.numPantalla == 0x67) && (juego.logica.guillermo.altura
+                        < 0x1e)) {
                     juego.logica.haFracasado = true;
                     juego.logica.investigacionCompleta = true;
                 }
@@ -241,7 +241,7 @@ class Jorge extends Monje {
             }
 
             // si entra a la habitación del espejo, inicia el estado de la secuencia final
-            if (juego.motor.numPantalla == 0x73){
+            if (juego.motor.numPantalla == 0x73) {
                 juego.logica.bonus |= 0x0800;
 
                 // pone en el marcador la frase SOIS VOS, GUILERMO... PASAD, OS ESTABA ESPERANDO. TOMAD, AQUI ESTA VUESTRO PREMIO
@@ -252,8 +252,6 @@ class Jorge extends Monje {
 
             juego.logica.buscRutas.seBuscaRuta = false;
 
-            return;
         }
     }
-
 }

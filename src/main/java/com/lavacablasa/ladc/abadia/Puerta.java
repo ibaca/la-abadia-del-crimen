@@ -9,10 +9,10 @@ class Puerta extends EntidadJuego {
     /////////////////////////////////////////////////////////////////////////////
 
     private static final int[][] despOrientacion = {
-        { +2,  0,    0, -1,   -1, -34,   +1,    +1,     0,  0,    +1,  0 },
-        {  0, -4,   -1, -1,   -1, -42,    0,     0,     0,  0,     0, -1 },
-        { -2,  0,   -1,  0,   -5, -42,    0,    +1,     0,  0,    -1,  0 },
-        {  0, +4,    0,  0,   -5, -34,   +1,     0,    +1, +1,     0, +1 }
+            { +2, 0, 0, -1, -1, -34, +1, +1, 0, 0, +1, 0 },
+            { 0, -4, -1, -1, -1, -42, 0, 0, 0, 0, 0, -1 },
+            { -2, 0, -1, 0, -5, -42, 0, +1, 0, 0, -1, 0 },
+            { 0, +4, 0, 0, -5, -34, +1, 0, +1, +1, 0, +1 }
     };
 
     int identificador;                  // identificador de la puerta
@@ -36,8 +36,7 @@ class Puerta extends EntidadJuego {
 
     // actualiza la posición del sprite dependiendo de su posición con respecto a la cámara
     @Override
-    void notificaVisibleEnPantalla(int posXPant, int posYPant, int profundidad)
-    {
+    void notificaVisibleEnPantalla(int posXPant, int posYPant, int profundidad) {
         // pone la posición y dimensiones actuales como posición y dimensiones antiguas
         sprite.preparaParaCambio();
 
@@ -52,7 +51,7 @@ class Puerta extends EntidadJuego {
         sprite.profundidad = profundidad + despOrientacion[oriPuerta][6];
         sprite.haCambiado = juego.motor.hayQueRedibujar || hayQueRedibujar;
         sprite.esVisible = true;
-        sprite.despGfx = 0x0aa49 + 0xc000*despOrientacion[oriPuerta][7];
+        sprite.despGfx = 0x0aa49 + 0xc000 * despOrientacion[oriPuerta][7];
         sprite.posXLocal += despOrientacion[oriPuerta][8];
         sprite.posYLocal += despOrientacion[oriPuerta][9];
 
@@ -65,8 +64,7 @@ class Puerta extends EntidadJuego {
     /////////////////////////////////////////////////////////////////////////////
 
     // comprueba si hay que abrir o cerrar una puerta
-    void compruebaAbrirCerrar(Personaje[] personajes)
-    {
+    void compruebaAbrirCerrar(Personaje[] personajes) {
         // si la puerta está fija, sale
         if (estaFija) return;
 
@@ -74,10 +72,10 @@ class Puerta extends EntidadJuego {
 
         // TODO: si guillermo o adso están cerca de la puerta y no tienen permisos para abrirla, se cierra
 
-        for (int i = 0; i < personajes.length; i++){
+        for (int i = 0; i < personajes.length; i++) {
             // si tiene permisos para entrar en esa puerta
-            if ((personajes[i].permisosPuertas & mascara) != 0){
-                if (puedeAbrir(personajes[i])){
+            if ((personajes[i].permisosPuertas & mascara) != 0) {
+                if (puedeAbrir(personajes[i])) {
                     return;
                 }
             }
@@ -90,8 +88,7 @@ class Puerta extends EntidadJuego {
     }
 
     // comprueba si el personaje está cerca de la puerta y si es así, si se puede abrir
-    boolean puedeAbrir(Personaje pers)
-    {
+    boolean puedeAbrir(Personaje pers) {
         int difX = pers.posX - (posX - 1);
         // si no está cerca de la puerta en x, sale
         if ((difX < 0) || (difX >= 4)) return false;
@@ -105,8 +102,7 @@ class Puerta extends EntidadJuego {
     }
 
     // ejecuta las acciones correspondientes para abrir o cerrar la puerta
-    boolean accionesAbrirCerrar(boolean abrir)
-    {
+    boolean accionesAbrirCerrar(boolean abrir) {
         // si la puerta ya está en el estado deseado, sale
         if (abrir == estaAbierta) {
             return true;
@@ -127,9 +123,9 @@ class Puerta extends EntidadJuego {
 
         // si la puerta está en las 20x20 posiciones centrales de la rejilla
         int[] posRejilla = new int[2];
-        if (rejilla.estaEnRejillaCentral(this, posRejilla)){
-            posRejilla[0] += 2*despOrientacion[orientacion][10];
-            posRejilla[1] += 2*despOrientacion[orientacion][11];
+        if (rejilla.estaEnRejillaCentral(this, posRejilla)) {
+            posRejilla[0] += 2 * despOrientacion[orientacion][10];
+            posRejilla[1] += 2 * despOrientacion[orientacion][11];
 
             // si no hay un personaje en la posición en la que se abre o cierra la puerta, sale
             if ((rejilla.bufAlturas[posRejilla[1]][posRejilla[0]] & 0xf0) == 0) return true;
@@ -150,12 +146,11 @@ class Puerta extends EntidadJuego {
     /////////////////////////////////////////////////////////////////////////////
 
     // marca la altura de las posiciones ocupadas por la puerta
-    void marcaPosiciones(RejillaPantalla rejilla, int valor)
-    {
+    void marcaPosiciones(RejillaPantalla rejilla, int valor) {
         // si la puerta está en las 20x20 posiciones centrales de la rejilla, marca las posiciones que ocupa
         int[] posRejilla = new int[2];
-        if (rejilla.estaEnRejillaCentral(this, posRejilla)){
-            for (int i = 0; i < 3; i++){
+        if (rejilla.estaEnRejillaCentral(this, posRejilla)) {
+            for (int i = 0; i < 3; i++) {
                 rejilla.bufAlturas[posRejilla[1]][posRejilla[0]] = (byte) valor;
                 posRejilla[0] += despOrientacion[orientacion][10];
                 posRejilla[1] += despOrientacion[orientacion][11];

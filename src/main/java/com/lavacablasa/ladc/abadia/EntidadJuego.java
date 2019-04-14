@@ -3,17 +3,25 @@ package com.lavacablasa.ladc.abadia;
 import static com.lavacablasa.ladc.abadia.Orientacion.DERECHA;
 
 class Orientacion {
-    public static final int DERECHA     = 0;            // hacia +x
-    public static final int ABAJO       = 1;            // hacia -y
-    public static final int IZQUIERDA   = 2;            // hacia -x
-    public static final int ARRIBA      = 3;            // hacia +y
+    /** hacia +x */
+    public static final int DERECHA = 0;
+    /** hacia -y */
+    public static final int ABAJO = 1;
+    /** hacia -x */
+    public static final int IZQUIERDA = 2;
+    /** hacia +y */
+    public static final int ARRIBA = 3;
 }
 
 class PosicionJuego {
-    public int orientacion;         // orientación de la posición en el mundo
-    public int posX;                // posición x en coordenadas de mundo
-    public int posY;                // posición y en coordenadas de mundo
-    public int altura;              // altura en coordenadas de mundo
+    /** orientación de la posición en el mundo */
+    public int orientacion;
+    /** posición x en coordenadas de mundo */
+    public int posX;
+    /** posición y en coordenadas de mundo */
+    public int posY;
+    /** altura en coordenadas de mundo */
+    public int altura;
 
     PosicionJuego() {
         this(DERECHA, 0, 0, 0);
@@ -36,7 +44,7 @@ class PosicionJuego {
 
 abstract class EntidadJuego extends PosicionJuego {
     Juego juego;
-    Sprite sprite;			// sprite asociado a la entidad
+    Sprite sprite;
 
     EntidadJuego(Juego juego, Sprite sprite) {
         this.juego = juego;

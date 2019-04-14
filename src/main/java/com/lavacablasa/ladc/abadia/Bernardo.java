@@ -21,11 +21,11 @@ class Bernardo extends Monje {
     /////////////////////////////////////////////////////////////////////////////
 
     private static final PosicionJuego[] posicionesPredef = {
-        new PosicionJuego(ABAJO, 0x8c, 0x48, 0x02),		// posición en la iglesia
-        new PosicionJuego(ARRIBA, 0x32, 0x35, 0x02),	    // posición en el refectorio
-        new PosicionJuego(IZQUIERDA, 0x3d, 0x5c, 0x0f),	// posición de su mesa en el scriptorium
-        new PosicionJuego(DERECHA, 0xbc, 0x15, 0x02),	    // celda de los monjes
-        new PosicionJuego(ARRIBA, 0x88, 0xa8, 0x00)		// salida de la abadía
+            new PosicionJuego(ABAJO, 0x8c, 0x48, 0x02),        // posición en la iglesia
+            new PosicionJuego(ARRIBA, 0x32, 0x35, 0x02),        // posición en el refectorio
+            new PosicionJuego(IZQUIERDA, 0x3d, 0x5c, 0x0f),    // posición de su mesa en el scriptorium
+            new PosicionJuego(DERECHA, 0xbc, 0x15, 0x02),        // celda de los monjes
+            new PosicionJuego(ARRIBA, 0x88, 0xa8, 0x00)        // salida de la abadía
     };
 
     boolean estaEnLaAbadia;
@@ -51,33 +51,32 @@ class Bernardo extends Monje {
     //		0x00 . estado incial
     //		0x07 . estado en el que persigue a guillermo hasta quitarle el pergamino
     //		0x14 . estado en el que ya no tiene nada que hacer, por lo que tan sólo se pasea por la abadía
-    void piensa()
-    {
+    void piensa() {
         // si bernardo no está en la abadía, sale
-        if (!estaEnLaAbadia){
+        if (!estaEnLaAbadia) {
             juego.logica.buscRutas.seBuscaRuta = false;
 
             return;
         }
 
         // si es sexta, va al comedor
-        if (juego.logica.momentoDia == SEXTA){
+        if (juego.logica.momentoDia == SEXTA) {
             aDondeVa = 1;
 
             return;
         }
 
         // si es prima, va a la iglesia
-        if (juego.logica.momentoDia == PRIMA){
+        if (juego.logica.momentoDia == PRIMA) {
             aDondeVa = 0;
 
             return;
         }
 
         // al quinto día, abandona la abadía
-        if (juego.logica.dia == 5){
+        if (juego.logica.dia == 5) {
             // si llega a la salida de las escaleras, se va de la abadía
-            if (aDondeHaLlegado == 4){
+            if (aDondeHaLlegado == 4) {
                 estaEnLaAbadia = false;
                 posX = posY = altura = 0;
             }
@@ -87,22 +86,22 @@ class Bernardo extends Monje {
         }
 
         // en completas o por la noche, se va a la celda de los monjes
-        if ((juego.logica.momentoDia == COMPLETAS) || (juego.logica.momentoDia == NOCHE)){
+        if ((juego.logica.momentoDia == COMPLETAS) || (juego.logica.momentoDia == NOCHE)) {
             aDondeVa = 3;
 
             return;
         }
 
         // si es vísperas, va a la iglesia
-        if (juego.logica.momentoDia == VISPERAS){
+        if (juego.logica.momentoDia == VISPERAS) {
             aDondeVa = 0;
 
             return;
         }
 
         // si ya no tiene nada que hacer y ha llegado a su destino, se mueve a una posición aleatoria
-        if (estado == 0x14){
-            if (aDondeHaLlegado == aDondeVa){
+        if (estado == 0x14) {
+            if (aDondeHaLlegado == aDondeVa) {
                 aDondeVa = juego.logica.numeroAleatorio & 0x03;
             }
 
@@ -110,9 +109,9 @@ class Bernardo extends Monje {
         }
 
         // si es el cuarto día
-        if (juego.logica.dia == 4){
+        if (juego.logica.dia == 4) {
             // si va a por el abad y ya le ha dado el pergamino
-            if ((aDondeVa == POS_ABAD) && ((juego.logica.abad.objetos & PERGAMINO) == PERGAMINO)){
+            if ((aDondeVa == POS_ABAD) && ((juego.logica.abad.objetos & PERGAMINO) == PERGAMINO)) {
                 // indica que ya no tiene nada que hacer
                 estado = 0x14;
 
@@ -127,7 +126,7 @@ class Bernardo extends Monje {
         }
 
         // si bernardo tiene el pergamino, va a dárselo al abad
-        if ((objetos & PERGAMINO) == PERGAMINO){
+        if ((objetos & PERGAMINO) == PERGAMINO) {
             aDondeVa = POS_ABAD;
 
             // cambia la máscara de los objetos para no volver a coger el pergamino
@@ -137,7 +136,8 @@ class Bernardo extends Monje {
         }
 
         // si el pergamino está a buen recaudo o el abad va a echar a guillermo, bernardo ya no tiene nada que hacer
-        if (juego.logica.pergaminoGuardado || ((juego.logica.abad.objetos & PERGAMINO) == PERGAMINO) || (juego.logica.abad.estado == 0x0b)){
+        if (juego.logica.pergaminoGuardado || ((juego.logica.abad.objetos & PERGAMINO) == PERGAMINO) || (
+                juego.logica.abad.estado == 0x0b)) {
             // va al scriptorium
             aDondeVa = 2;
             estado = 0x14;
@@ -151,21 +151,21 @@ class Bernardo extends Monje {
         juego.logica.duracionMomentoDia = 0;
 
         // si guillermo tiene el pergamino
-        if ((juego.logica.guillermo.objetos & PERGAMINO) == PERGAMINO){
+        if ((juego.logica.guillermo.objetos & PERGAMINO) == PERGAMINO) {
             // si está persiguiendo a guillermo
-            if (estado == 7){
+            if (estado == 7) {
                 aDondeVa = POS_GUILLERMO;
 
                 // si está cerca de guillermo, le exige el manuscrito y decrementa su vida
-                if (estaCerca(juego.logica.guillermo)){
-                    if (!juego.gestorFrases.mostrandoFrase){
+                if (estaCerca(juego.logica.guillermo)) {
+                    if (!juego.gestorFrases.mostrandoFrase) {
                         // pone en el marcador la frase DADME EL MANUSCRITO, FRAY GUILLERMO
                         juego.gestorFrases.muestraFrase(0x05);
 
                         juego.logica.decrementaObsequium(2);
                     }
                 }
-            } else if (estaCerca(juego.logica.guillermo)){
+            } else if (estaCerca(juego.logica.guillermo)) {
                 // si está cerca de guillermo, se va a la celda de los monjes
                 aDondeVa = 3;
             } else {

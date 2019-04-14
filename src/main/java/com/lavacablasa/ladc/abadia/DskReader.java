@@ -10,7 +10,6 @@ import java.util.Objects;
 public class DskReader {
     private byte[] data;         // Disk data
     private int numTracks;       // number of tracks of the disk
-    private int numSides;        // number of sides of the disk
 
     public DskReader(byte[] dskData) {
         this.data = Objects.requireNonNull(dskData);
@@ -23,7 +22,6 @@ public class DskReader {
 
         // get disk information
         numTracks = data[0x30] & 0xff;
-        numSides = data[0x31] & 0xff;
     }
 
     public void getTrackData(int numTrack, byte[] buffer, int bufferPos, int size) {

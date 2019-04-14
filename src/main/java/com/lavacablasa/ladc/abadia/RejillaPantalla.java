@@ -3,20 +3,20 @@ package com.lavacablasa.ladc.abadia;
 class RejillaPantalla {
 
     private static final int CALCULO_AVANCE_POSICION[][] = {
-            {  0, +1,   -1,  0,   +1, -2,   +2, -1 },
-            { +1,  0,    0, +1,   -2, -2,   -1, -2 },
-            {  0, -1,   +1,  0,   -2, +1,   -2, +1 },
-            { -1,  0,    0, -1,   +1, +1,   +1, +2 }
+            { 0, +1, -1, 0, +1, -2, +2, -1 },
+            { +1, 0, 0, +1, -2, -2, -1, -2 },
+            { 0, -1, +1, 0, -2, +1, -2, +1 },
+            { -1, 0, 0, -1, +1, +1, +1, +2 }
     };
 
     private static final int[][] INCREMENTOS_BLOQUE = {
-        {  1,  0 },
-        {  0, -1 },
-        { -1,  0 },
-        {  0,  1 }
+            { 1, 0 },
+            { 0, -1 },
+            { -1, 0 },
+            { 0, 1 }
     };
 
-    private static final int[] DATOS_ALTURA_PLANTAS = {0x18a00, 0x18f00, 0x19080};
+    private static final int[] DATOS_ALTURA_PLANTAS = { 0x18a00, 0x18f00, 0x19080 };
     private static final int GRID_SIZE = 24;
 
     Juego juego;
@@ -28,25 +28,22 @@ class RejillaPantalla {
 
     int[][] bufCalculoAvance = new int[4][4];   // buffer auxiliar para el cálculo del avance del personaje
 
-    RejillaPantalla(Juego juego)
-    {
+    RejillaPantalla(Juego juego) {
         this.juego = juego;
     }
 
     // dada la posición de un personaje, calcula los mínimos valores visibles del área de juego
-    void calculaMinimosValoresVisibles(Personaje pers)
-    {
+    void calculaMinimosValoresVisibles(Personaje pers) {
         minPosX = (pers.posX & 0xf0) - 4;
         minPosY = (pers.posY & 0xf0) - 4;
         minAltura = juego.motor.obtenerAlturaBasePlanta(pers.altura);
     }
 
     // dado un personaje, rellena la rejilla con la información de altura de la planta recortada para la pantalla
-    void rellenaAlturasPantalla(Personaje pers)
-    {
+    void rellenaAlturasPantalla(Personaje pers) {
         // limpia la matriz de alturas
-        for (int j = 0; j < GRID_SIZE; j++){
-            for (int i = 0; i < GRID_SIZE; i++){
+        for (int j = 0; j < GRID_SIZE; j++) {
+            for (int i = 0; i < GRID_SIZE; i++) {
                 bufAlturas[j][i] = 0;
             }
         }
@@ -62,7 +59,7 @@ class RejillaPantalla {
             int tipoBloque = juego.gameData(datosAltura + 0);
 
             // si el bloque no es de un tipo conocido, sale
-            if (((tipoBloque & 0x07) == 0) || ((tipoBloque & 0x07) >= 6)){
+            if (((tipoBloque & 0x07) == 0) || ((tipoBloque & 0x07) >= 6)) {
                 break;
             }
 
@@ -70,7 +67,7 @@ class RejillaPantalla {
             int lgtudY = juego.gameData(datosAltura + 4);
 
             // si la entrada no es de 5 bytes, la longitud se codifica en 4 bits en vez de en 8
-            if ((tipoBloque & 0x08) == 0){
+            if ((tipoBloque & 0x08) == 0) {
                 lgtudY = lgtudX & 0x0f;
                 lgtudX = (lgtudX >> 4) & 0x0f;
             }
@@ -80,7 +77,7 @@ class RejillaPantalla {
             int posY = juego.gameData(datosAltura + 2);
 
             // avanza a la siguiente entrada
-            if ((tipoBloque & 0x08) == 0){
+            if ((tipoBloque & 0x08) == 0) {
                 datosAltura += 4;
             } else {
                 datosAltura += 5;
@@ -95,12 +92,12 @@ class RejillaPantalla {
             int distX = posX - minPosX;
 
             // si el bloque empieza antes que el rectángulo de recorte
-            if (distX < 0){
+            if (distX < 0) {
                 // si el bloque termina antes de que empiece la zona visible
-                if (-distX >= lgtudX){
+                if (-distX >= lgtudX) {
                     continue;
                 }
-            } else if (distX >= GRID_SIZE){
+            } else if (distX >= GRID_SIZE) {
                 // si el bloque empieza después de que termine la zona visible
                 continue;
             }
@@ -109,12 +106,12 @@ class RejillaPantalla {
             int distY = posY - minPosY;
 
             // si el bloque empieza antes que el rectángulo de recorte
-            if (distY < 0){
+            if (distY < 0) {
                 // si el bloque termina antes de que empiece la zona visible
-                if (-distY >= lgtudY){
+                if (-distY >= lgtudY) {
                     continue;
                 }
-            } else if (distY >= GRID_SIZE){
+            } else if (distY >= GRID_SIZE) {
                 // si el bloque empieza después de que termine la zona visible
                 continue;
             }
@@ -195,8 +192,7 @@ class RejillaPantalla {
 
     // comprueba si la posición que se le pasa (en coordenadas de mundo) está dentro de las 20x20 posiciones
     // centrales de la rejilla y si es así, devuelve la posición en el sistema de coordenadas de la rejilla
-    boolean ajustaAPosRejilla(int posX, int posY, int[] posRejilla)
-    {
+    boolean ajustaAPosRejilla(int posX, int posY, int[] posRejilla) {
         posRejilla[0] = posX - minPosX;
 
         // si está fuera del rango en las x, devuelve false
@@ -212,10 +208,9 @@ class RejillaPantalla {
 
     // comprueba si la posición que se le pasa está en las 20x20 posiciones centrales de la rejilla de la
     // pantalla actual, y de ser así, se devuelve su posición en el sistema de coordenadas de la rejilla
-    boolean estaEnRejillaCentral(PosicionJuego pos, int[] posRejilla)
-    {
+    boolean estaEnRejillaCentral(PosicionJuego pos, int[] posRejilla) {
         // si la posición no está en la misma planta que la de la rejilla actual, sale
-        if (juego.motor.obtenerAlturaBasePlanta(pos.altura) != minAltura){
+        if (juego.motor.obtenerAlturaBasePlanta(pos.altura) != minAltura) {
             return false;
         }
 
@@ -224,8 +219,7 @@ class RejillaPantalla {
     }
 
     // devuelve la diferencia de altura y posición del personaje si sigue avanzando hacia donde mira
-    boolean obtenerAlturaPosicionesAvance(Personaje pers, int[] difAltura, int[] avance)
-    {
+    boolean obtenerAlturaPosicionesAvance(Personaje pers, int[] difAltura, int[] avance) {
         // si el personaje no está en la misma planta que la de la rejilla, sale
         if (juego.motor.obtenerAlturaBasePlanta(pers.altura) != minAltura) return false;
 
@@ -236,8 +230,7 @@ class RejillaPantalla {
     }
 
     // devuelve la diferencia de altura y posición del personaje si sigue avanzando hacia donde mira
-    boolean obtenerAlturaPosicionesAvance2(Personaje pers, int[] difAltura, int[] avance)
-    {
+    boolean obtenerAlturaPosicionesAvance2(Personaje pers, int[] difAltura, int[] avance) {
         return obtenerAlturaPosicionesAvanceComun(pers, 0, difAltura, avance);
     }
 
@@ -246,8 +239,7 @@ class RejillaPantalla {
     /////////////////////////////////////////////////////////////////////////////
 
     // devuelve la diferencia de altura y posición del personaje si sigue avanzando hacia donde mira
-    boolean obtenerAlturaPosicionesAvanceComun(Personaje pers, int alturaLocal, int[] difAltura, int[] avance)
-    {
+    boolean obtenerAlturaPosicionesAvanceComun(Personaje pers, int alturaLocal, int[] difAltura, int[] avance) {
         int[] posLocal = new int[2];
 
         // si la posición no está dentro de las 20x20 posiciones centrales de la pantalla que se muestra, sale
@@ -259,15 +251,15 @@ class RejillaPantalla {
         posLocal[1] += CALCULO_AVANCE_POSICION[pers.orientacion][despIni + 1];
 
         // rellena el buffer para el cálculo del avance con las posiciones relevantes según la orientación
-        for (int j = 0; j < 4; j++){
+        for (int j = 0; j < 4; j++) {
             int oldPosXLocal = posLocal[0];
             int oldPosYLocal = posLocal[1];
 
-            for (int i = 0; i < 4; i++){
+            for (int i = 0; i < 4; i++) {
                 // obtiene la altura de la posición
                 int alturaPos = bufAlturas[posLocal[1]][posLocal[0]] & 0xff;
 
-                if (alturaPos < 0x10){
+                if (alturaPos < 0x10) {
                     // si no hay un personaje en esa posición, obtiene la diferencia de altura entre la posición y el personaje
                     alturaPos = alturaPos - alturaLocal;
                 } else {
@@ -286,12 +278,12 @@ class RejillaPantalla {
         }
 
         // si el personaje ocupa 4 posiciones en la rejilla
-        if (!pers.enDesnivel){
+        if (!pers.enDesnivel) {
             difAltura[0] = bufCalculoAvance[0][1];
             difAltura[1] = bufCalculoAvance[0][2];
 
             // si en las 2 posiciones hacia las que quiere avanzar el personaje no hay la misma altura
-            if (difAltura[0] != difAltura[1]){
+            if (difAltura[0] != difAltura[1]) {
                 // indica que hay una diferencia de altura > 1
                 difAltura[0] = 2;
             }
@@ -309,13 +301,12 @@ class RejillaPantalla {
     }
 
     // si los datos de altura están dentro de la zona de la rejilla, los graba
-    void fijaAlturaRecortando(int posX, int posY, int altura)
-    {
+    void fijaAlturaRecortando(int posX, int posY, int altura) {
         // recorta en y
         posY = posY - minPosY;
 
         // si la coordenada y está fuera de la zona visible en y, sale
-        if ((posY < 0) || (posY >= GRID_SIZE)){
+        if ((posY < 0) || (posY >= GRID_SIZE)) {
             return;
         }
 
@@ -323,7 +314,7 @@ class RejillaPantalla {
         posX = posX - minPosX;
 
         // si la coordenada x está fuera de la zona visible en x, sale
-        if ((posX < 0) || (posX >= GRID_SIZE)){
+        if ((posX < 0) || (posX >= GRID_SIZE)) {
             return;
         }
 

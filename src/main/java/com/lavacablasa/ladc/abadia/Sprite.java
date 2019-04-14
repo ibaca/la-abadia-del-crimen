@@ -31,8 +31,7 @@ class Sprite {
     /////////////////////////////////////////////////////////////////////////////
 
     // dadas la posición y dimensiones del sprite, calcula la posición y dimensiones ampliados a los tiles que ocupa (x en bytes, y en tiles)
-    void ajustaATiles()
-    {
+    void ajustaATiles() {
         // calcula la posición inicial del tile que contiene al sprite
         posXTile = posXPant & 0xfc;
         posYTile = posYPant & 0xf8;
@@ -47,15 +46,14 @@ class Sprite {
     }
 
     // amplia las dimensiones a dibujar para que se redibuje el área ocupada anteriormente por el sprite
-    void ampliaDimViejo()
-    {
+    void ampliaDimViejo() {
         // ajusta en x
 
         // halla la distancia en x entre el origen del tile en el que empieza el sprite y el origen del sprite anterior
         int difX = posXTile - oldPosXPant;
 
         // si empieza primero el sprite antiguo
-        if (difX >= 0){
+        if (difX >= 0) {
             // obtiene la máxima anchura del sprite antiguo que se cubre con el ancho ampliado actual
             int anchoCubierto = difX + anchoFinal;
 
@@ -63,7 +61,7 @@ class Sprite {
             int oldAnchoAmpliado = oldAncho;
 
             // si el sprite antiguo termina antes que el área cubierta, amplia el ancho del sprite antiguo
-            if (anchoCubierto >= oldAnchoAmpliado){
+            if (anchoCubierto >= oldAnchoAmpliado) {
                 oldAnchoAmpliado = anchoCubierto;
             }
 
@@ -78,7 +76,7 @@ class Sprite {
             int anchoCubierto = -difX + oldAncho;
 
             // si el ancho ampliado no cubre el ancho del sprite viejo, amplía el ancho
-            if (anchoFinal < anchoCubierto){
+            if (anchoFinal < anchoCubierto) {
                 anchoFinal = (anchoCubierto + 3) & 0xfc;
             }
         }
@@ -89,7 +87,7 @@ class Sprite {
         int difY = posYTile - oldPosYPant;
 
         // si empieza primero el sprite antiguo
-        if (difY >= 0){
+        if (difY >= 0) {
             // obtiene la máxima altura del sprite antiguo que se cubre con el alto ampliado actual
             int altoCubierto = difY + altoFinal;
 
@@ -97,7 +95,7 @@ class Sprite {
             int oldAltoAmpliado = oldAlto;
 
             // si el sprite antiguo termina antes que el área cubierta, amplia el alto del sprite antiguo
-            if (altoCubierto >= oldAltoAmpliado){
+            if (altoCubierto >= oldAltoAmpliado) {
                 oldAltoAmpliado = altoCubierto;
             }
 
@@ -111,7 +109,7 @@ class Sprite {
             // obtiene la máxima altura que ocupa el sprite antiguo dentro del sprite ampliado
             int altoCubierto = -difY + oldAlto;
 
-            if (altoFinal < altoCubierto){
+            if (altoFinal < altoCubierto) {
                 // si el alto ampliado no cubre el alto del sprite viejo, amplía el alto
                 altoFinal = (altoCubierto + 7) & 0xf8;
             }
@@ -123,32 +121,32 @@ class Sprite {
     /////////////////////////////////////////////////////////////////////////////
 
     // dibuja la parte visible del sprite actual en el área ocupada por el sprite que se le pasa como parámetro
-    void dibuja(Juego juego, Sprite spr, byte[] bufferMezclas, int lgtudClipX, int lgtudClipY, int dist1X, int dist2X, int dist1Y, int dist2Y)
-    {
+    void dibuja(Juego juego, Sprite spr, byte[] bufferMezclas, int lgtudClipX, int lgtudClipY, int dist1X, int dist2X,
+            int dist1Y, int dist2Y) {
         // calcula la dirección de inicio de los gráficos visibles del sprite a mezclar en el área ocupada por el sprite que se está procesando
-        int despSrc = despGfx + dist2Y*ancho + dist2X;
+        int despSrc = despGfx + dist2Y * ancho + dist2X;
 
         // calcula la dirección de destino de los gráficos en el buffer de sprites
-        int despDest = spr.despBuffer + (dist1Y*spr.anchoFinal + dist1X)*4;
+        int despDest = spr.despBuffer + (dist1Y * spr.anchoFinal + dist1X) * 4;
 
         // recorre los pixels visibles en Y
-        for (int lgtudY = 0; lgtudY < lgtudClipY; lgtudY++){
+        for (int lgtudY = 0; lgtudY < lgtudClipY; lgtudY++) {
             int src = despSrc;
             int dest = despDest;
 
             // recorre los pixels visibles en X
-            for (int lgtudX = 0; lgtudX < lgtudClipX; lgtudX++){
+            for (int lgtudX = 0; lgtudX < lgtudClipX; lgtudX++) {
                 // lee un byte del gráfico (4 pixels)
                 int data = juego.gameData(src);
 
                 // para cada pixel del byte leido
-                for (int k = 0; k < 4; k++){
+                for (int k = 0; k < 4; k++) {
                     // obtiene el color del pixel
-                    int color = juego.cpc6128.unpackPixelMode1(data, k);
+                    int color = CPC6128.unpackPixelMode1(data, k);
 
                     // si no es un pixel transparente lo copia al destino
-                    if (color != 0){
-					    bufferMezclas[dest] = (byte) color;
+                    if (color != 0) {
+                        bufferMezclas[dest] = (byte) color;
                     }
                     dest++;
                 }
@@ -156,7 +154,7 @@ class Sprite {
             }
 
             despSrc += ancho;
-            despDest += spr.anchoFinal*4;
+            despDest += spr.anchoFinal * 4;
         }
     }
 
@@ -165,10 +163,10 @@ class Sprite {
     /////////////////////////////////////////////////////////////////////////////
 
     // pone la posición y dimensiones actuales como posición y dimensiones antiguas
-    void preparaParaCambio()
-    {
+    void preparaParaCambio() {
         oldPosXPant = posXPant;
         oldPosYPant = posYPant;
         oldAncho = ancho;
         oldAlto = alto;
-    }}
+    }
+}

@@ -2,7 +2,6 @@ package com.lavacablasa.ladc.swing;
 
 import com.lavacablasa.ladc.core.Input;
 import com.lavacablasa.ladc.core.InputPlugin;
-
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Collections;
@@ -16,7 +15,7 @@ public class SwingInputPlugin extends KeyAdapter implements InputPlugin {
     private static final Map<Integer, Input> INPUTS;
 
     static {
-        Map<Integer,Input> inputs = new HashMap<>();
+        Map<Integer, Input> inputs = new HashMap<>();
         inputs.put(KeyEvent.VK_DELETE, Input.SUPR);
         inputs.put(KeyEvent.VK_ENTER, Input.INTRO);
         inputs.put(KeyEvent.VK_SPACE, Input.SPACE);

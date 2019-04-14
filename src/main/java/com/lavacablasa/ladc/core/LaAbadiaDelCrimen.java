@@ -51,21 +51,17 @@ public class LaAbadiaDelCrimen {
     private static final int NUM_INTERRUPTS_PER_LOGIC_UPDATE = 1;
 
     // fields
-    private final int refreshRate;
     private final GameContext context;
-    private Thread asyncThread;
-    private TimingHandler timingHandler;
-    private Juego abadiaGame;              // objeto principal del juego
-    private CPC6128 cpc6128;                // clase de ayuda para realizar operaciones gráficas
+    private final Thread asyncThread;
+    private final TimingHandler timingHandler;
+    private final Juego abadiaGame;
+    private final CPC6128 cpc6128;
 
     public LaAbadiaDelCrimen(GameContext context) {
         this.context = context;
-        this.refreshRate = NUM_INTERRUPTS_PER_SECOND / NUM_INTERRUPTS_PER_VIDEO_UPDATE;
+        this.cpc6128 = new CPC6128(context.getGfxOutput());
 
-        //crea el objeto para tratar con gráficos del amstrad
-        cpc6128 = new CPC6128(context.getGfxOutput());
-
-        byte[] diskData = ClasspathLoader.load("/abadia.dsk");
+        byte[] diskData = context.load("/abadia.dsk");
         byte[] memoryData = readDiskImageToMemory(diskData);
 
         // creates the timing handler
@@ -91,47 +87,47 @@ public class LaAbadiaDelCrimen {
         DskReader dsk = new DskReader(diskImageData);
 
         // obtiene los datos de las pistas 0x01-0x11
-        for (int i = 0x01; i <= 0x11; i++){
-            dsk.getTrackData(i, auxBuffer,(i - 0x01)*0x0f00, 0x0f00);
+        for (int i = 0x01; i <= 0x11; i++) {
+            dsk.getTrackData(i, auxBuffer, (i - 0x01) * 0x0f00, 0x0f00);
         }
 
         // reordena los datos y los copia al destino
-        reOrderAndCopy(auxBuffer,0x0000, memoryData,0x00000, 0x4000);	// abadia0.bin
-        reOrderAndCopy(auxBuffer,0x4000, memoryData,0x0c000, 0x4000);	// abadia3.bin
-        reOrderAndCopy(auxBuffer,0x8000, memoryData,0x20000, 0x4000);	// abadia8.bin
-        reOrderAndCopy(auxBuffer,0xc000, memoryData,0x04100, 0x3f00);	// abadia1.bin
+        reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x00000, 0x4000);    // abadia0.bin
+        reOrderAndCopy(auxBuffer, 0x4000, memoryData, 0x0c000, 0x4000);    // abadia3.bin
+        reOrderAndCopy(auxBuffer, 0x8000, memoryData, 0x20000, 0x4000);    // abadia8.bin
+        reOrderAndCopy(auxBuffer, 0xc000, memoryData, 0x04100, 0x3f00);    // abadia1.bin
 
         // obtiene los datos de las pistas 0x12-0x16
-        for (int i = 0x12; i <= 0x16; i++){
-            dsk.getTrackData(i, auxBuffer, (i - 0x12)*0x0f00, 0x0f00);
+        for (int i = 0x12; i <= 0x16; i++) {
+            dsk.getTrackData(i, auxBuffer, (i - 0x12) * 0x0f00, 0x0f00);
         }
 
         // reordena los datos y los copia al destino
-        reOrderAndCopy(auxBuffer, 0x0000, memoryData,0x1c000, 0x4000);	// abadia7.bin
+        reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x1c000, 0x4000);    // abadia7.bin
 
         // obtiene los datos de las pistas 0x17-0x1b
-        for (int i = 0x17; i <= 0x1b; i++){
-            dsk.getTrackData(i, auxBuffer,(i - 0x17)*0x0f00, 0x0f00);
+        for (int i = 0x17; i <= 0x1b; i++) {
+            dsk.getTrackData(i, auxBuffer, (i - 0x17) * 0x0f00, 0x0f00);
         }
 
         // reordena los datos y los copia al destino
-        reOrderAndCopy(auxBuffer,0x0000, memoryData,0x18000, 0x4000);	// abadia6.bin
+        reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x18000, 0x4000);    // abadia6.bin
 
         // obtiene los datos de las pistas 0x1c-0x21
-        for (int i = 0x1c; i <= 0x21; i++){
-            dsk.getTrackData(i, auxBuffer,(i - 0x1c)*0x0f00, 0x0f00);
+        for (int i = 0x1c; i <= 0x21; i++) {
+            dsk.getTrackData(i, auxBuffer, (i - 0x1c) * 0x0f00, 0x0f00);
         }
 
         // reordena los datos y los copia al destino
-        reOrderAndCopy(auxBuffer,0x0000, memoryData,0x14000, 0x4000);	// abadia5.bin
+        reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x14000, 0x4000);    // abadia5.bin
 
         // obtiene los datos de las pistas 0x21-0x25
-        for (int i = 0x21; i <= 0x25; i++){
-            dsk.getTrackData(i, auxBuffer,(i - 0x21)*0x0f00, 0x0f00);
+        for (int i = 0x21; i <= 0x25; i++) {
+            dsk.getTrackData(i, auxBuffer, (i - 0x21) * 0x0f00, 0x0f00);
         }
 
         // reordena los datos y los copia al destino
-        reOrderAndCopy(auxBuffer,0x0000, memoryData,0x08000, 0x4000);	// abadia2.bin
+        reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x08000, 0x4000);    // abadia2.bin
 
         return memoryData;
     }
@@ -166,7 +162,7 @@ public class LaAbadiaDelCrimen {
                 if (!skipVideo) {
                     // render game screen
                     GfxOutput gfxOutput = context.getGfxOutput();
-                    render(gfxOutput);
+                    cpc6128.render();
                     gfxOutput.render();
                 }
             }
@@ -175,9 +171,4 @@ public class LaAbadiaDelCrimen {
             timingHandler.endThisInterrupt();
         }
     }
-
-    private void render(GfxOutput gfx) {
-        cpc6128.render();
-    }
-
 }

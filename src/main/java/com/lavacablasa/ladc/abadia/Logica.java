@@ -1,9 +1,5 @@
 package com.lavacablasa.ladc.abadia;
 
-import com.lavacablasa.ladc.core.Input;
-
-import java.util.Random;
-
 import static com.lavacablasa.ladc.abadia.MomentosDia.COMPLETAS;
 import static com.lavacablasa.ladc.abadia.MomentosDia.NOCHE;
 import static com.lavacablasa.ladc.abadia.MomentosDia.NONA;
@@ -25,35 +21,34 @@ import static com.lavacablasa.ladc.abadia.PosicionesPredefinidas.POS_ABAD;
 import static com.lavacablasa.ladc.abadia.PosicionesPredefinidas.POS_GUILLERMO;
 import static com.lavacablasa.ladc.abadia.PosicionesPredefinidas.POS_LIBRO;
 
+import com.lavacablasa.ladc.core.Input;
+import java.util.Random;
+
 class MomentosDia {
-    static final int NOCHE      = 0;
-    static final int PRIMA      = 1;
-    static final int TERCIA     = 2;
-    static final int SEXTA      = 3;
-    static final int NONA       = 4;
-    static final int VISPERAS   = 5;
-    static final int COMPLETAS  = 6;
+    static final int NOCHE = 0;
+    static final int PRIMA = 1;
+    static final int TERCIA = 2;
+    static final int SEXTA = 3;
+    static final int NONA = 4;
+    static final int VISPERAS = 5;
+    static final int COMPLETAS = 6;
 }
 
 // objetos del juego
 class ObjetosJuego {
-    static final int LIBRO      = 0x80;
-    static final int GUANTES    = 0x40;
-    static final int GAFAS      = 0x20;
-    static final int PERGAMINO  = 0x10;
-    static final int LLAVE1     = 0x08;
-    static final int LLAVE2     = 0x04;
-    static final int LLAVE3     = 0x02;
-    static final int LAMPARA    = 0x01;
+    static final int LIBRO = 0x80;
+    static final int GUANTES = 0x40;
+    static final int GAFAS = 0x20;
+    static final int PERGAMINO = 0x10;
+    static final int LLAVE1 = 0x08;
+    static final int LLAVE2 = 0x04;
+    static final int LLAVE3 = 0x02;
+    static final int LAMPARA = 0x01;
 }
 
 class Logica {
-    
-    private static final String[] tablaNumerosRomanos= {
-        "IXX",
-        "XIX",
-        "XXI"
-    };
+
+    private static final String[] tablaNumerosRomanos = { "IXX", "XIX", "XXI" };
 
     static final int[][] duracionEtapasDia = {
             { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
@@ -65,7 +60,7 @@ class Logica {
             { 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }
     };
 
-    Juego juego;                    
+    Juego juego;
 
     AccionesDia accionesDia;        // ejecutor de las acciones dependiendo del momento del día
     BuscadorRutas buscRutas;        // buscador y generador de rutas
@@ -115,7 +110,6 @@ class Logica {
     int numPersonajeCamara;         // indica el personaje al que sigue la cámara actualmente
     int opcionPersonajeCamara;      // indica el personaje al que podría seguir la cámara si no hay movimiento
 
-
     public Logica(Juego juego, byte[] buffer) {
         this.juego = juego;
         // crea los objetos usados por la lógica
@@ -124,8 +118,7 @@ class Logica {
     }
 
     // inicia la lógica
-    void inicia()
-    {
+    void inicia() {
         // inicia las entidades del juego
         iniciaSprites();
         iniciaPersonajes();
@@ -176,7 +169,7 @@ class Logica {
         // si se ha terminado el obsequium
         if (obsequium < 0) {
             // si guillermo no ha muerto, cambia el estado del abad para que le eche de la abadía
-            if (!haFracasado){
+            if (!haFracasado) {
                 abad.estado = 0x0b;
             }
 
@@ -191,8 +184,7 @@ class Logica {
     // métodos relacionados con el libro
     /////////////////////////////////////////////////////////////////////////////
 
-    void compruebaLecturaLibro()
-    {
+    void compruebaLecturaLibro() {
         // si guillermo no tiene el libro, sale
         if ((guillermo.objetos & LIBRO) == 0) return;
 
@@ -202,10 +194,10 @@ class Logica {
         cntLeeLibroSinGuantes++;
 
         // si guillermo ha leido un poco del libro sin los guantes, muere
-        if ((cntLeeLibroSinGuantes & 0xff) == 0){
+        if ((cntLeeLibroSinGuantes & 0xff) == 0) {
 
             // modifica el estado de fray guillermo para que suba al morir
-            guillermo.estado = guillermo.sprite.posYPant/2;
+            guillermo.estado = guillermo.sprite.posYPant / 2;
             guillermo.incrPosY = -2;
 
             haFracasado = true;
@@ -219,10 +211,10 @@ class Logica {
     // métodos relacionados con los bonus y los cambios de cámara
     /////////////////////////////////////////////////////////////////////////////
 
-    void actualizaBonusYCamara()
-    {
+    void actualizaBonusYCamara() {
         // comprueba si hay que seguir a berengario
-        if (((berengario.aDondeVa == POS_LIBRO) && (berengario.posX < 0x50) && (berengario.estaVivo)) || (berengario.aDondeVa == POS_ABAD)){
+        if (((berengario.aDondeVa == POS_LIBRO) && (berengario.posX < 0x50) && (berengario.estaVivo)) || (
+                berengario.aDondeVa == POS_ABAD)) {
             // si va al scriptorium a por el libro o va a avisar al abad, indica el posible cambio de cámara
             opcionPersonajeCamara = 4;
 
@@ -230,7 +222,7 @@ class Logica {
         }
 
         // comprueba si hay que seguir a bernardo gui
-        if (bernardo.aDondeVa == POS_ABAD){
+        if (bernardo.aDondeVa == POS_ABAD) {
             // si va a avisar al abad, indica el posible cambio de cámara
             opcionPersonajeCamara = 7;
 
@@ -238,7 +230,8 @@ class Logica {
         }
 
         // comprueba si hay que seguir al abad
-        if (((momentoDia == SEXTA) && (abad.aDondeHaLlegado >= 2)) || (abad.estado == 0x15) || (abad.guillermoHaCogidoElPergamino) || (abad.estado == 0x0b)){
+        if (((momentoDia == SEXTA) && (abad.aDondeHaLlegado >= 2)) || (abad.estado == 0x15)
+                || (abad.guillermoHaCogidoElPergamino) || (abad.estado == 0x0b)) {
             // si en sexta va a algún lugar interesante o si va a dejar el pergamino a su celda o si berengario le ha dicho
             // que bernardo tiene el pergamino o si está en estado de echar a guillermo, indica el posible cambio de cámara
             opcionPersonajeCamara = 3;
@@ -247,7 +240,7 @@ class Logica {
         }
 
         // comprueba si hay que seguir a malaquías
-        if ((malaquias.aDondeVa == POS_ABAD) || ((momentoDia == VISPERAS) && (malaquias.estado < 0x06))){
+        if ((malaquias.aDondeVa == POS_ABAD) || ((momentoDia == VISPERAS) && (malaquias.estado < 0x06))) {
             // si va a avisar al abad o es vísperas y no ha llegado a la cocina, indica el posible cambio de cámara
             opcionPersonajeCamara = 2;
 
@@ -255,7 +248,7 @@ class Logica {
         }
 
         // comprueba si hay que seguir a severino
-        if (severino.aDondeVa == POS_GUILLERMO){
+        if (severino.aDondeVa == POS_GUILLERMO) {
             // si va hacia la posición de guillermo, indica el posible cambio de cámara
             opcionPersonajeCamara = 5;
 
@@ -269,37 +262,37 @@ class Logica {
         bonus |= (guillermo.objetos & (GUANTES | LLAVE1 | LLAVE2)) | (adso.objetos & LLAVE3);
 
         // si guillermo tiene el pergamino
-        if ((guillermo.objetos & PERGAMINO) == PERGAMINO){
+        if ((guillermo.objetos & PERGAMINO) == PERGAMINO) {
             // si es la noche del tercer día
-            if ((dia == 3) && (momentoDia == NOCHE)){
+            if ((dia == 3) && (momentoDia == NOCHE)) {
                 bonus |= 0x1000;
             }
 
             // si tiene las gafas
-            if ((guillermo.objetos & GAFAS) == GAFAS){
+            if ((guillermo.objetos & GAFAS) == GAFAS) {
                 bonus |= 0x0100;
             }
 
             // si guillermo entra en la habitación del abad
-            if ((juego.motor.numPantalla == 0x0d) && (numPersonajeCamara == 0)){
+            if ((juego.motor.numPantalla == 0x0d) && (numPersonajeCamara == 0)) {
                 bonus |= 0x2000;
             }
         }
 
         // si guillermo visita el ala izquierda por la noche
-        if ((momentoDia == NOCHE) && (guillermo.posX < 0x60)){
+        if ((momentoDia == NOCHE) && (guillermo.posX < 0x60)) {
             bonus |= 0x0001;
         }
 
         // si guillermo está en la biblioteca
-        if (guillermo.altura >= 0x16){
+        if (guillermo.altura >= 0x16) {
             // si tiene las gafas
-            if ((guillermo.objetos & GAFAS) == GAFAS){
+            if ((guillermo.objetos & GAFAS) == GAFAS) {
                 bonus |= 0x0080;
             }
 
             // si adso ha cogido la lámpara
-            if ((adso.objetos & LAMPARA) == LAMPARA){
+            if ((adso.objetos & LAMPARA) == LAMPARA) {
                 bonus |= 0x0020;
             }
 
@@ -307,40 +300,41 @@ class Logica {
         }
 
         // si ha entrado en la habitación que hay detrás del espejo
-        if (juego.motor.numPantalla == 0x72){
+        if (juego.motor.numPantalla == 0x72) {
             bonus |= 0x0200;
         }
     }
 
-    void compruebaBonusYCambiosDeCamara()
-    {
+    void compruebaBonusYCambiosDeCamara() {
         // comprueba si hay opción de seguir a algún monje y actualiza los bonus
         actualizaBonusYCamara();
 
         boolean teclaPulsada = false;
 
         // si estamos en la conversación con jorge sobre el libro, la cámara sigue a jorge
-        if (((guillermo.objetos & GUANTES) == GUANTES) && ((jorge.estado == 0x0d) || (jorge.estado == 0x0e) || (jorge.estado == 0x0f))){
+        if (((guillermo.objetos & GUANTES) == GUANTES) && ((jorge.estado == 0x0d) || (jorge.estado == 0x0e) || (
+                jorge.estado == 0x0f))) {
             cntMovimiento = 0x32;
             opcionPersonajeCamara = 6;
         } else {
             // comprueba si se está moviendo guillermo
-            if ((juego.controles.estaSiendoPulsado(Input.UP)) || (juego.controles.estaSiendoPulsado(Input.LEFT)) || (juego.controles.estaSiendoPulsado(Input.RIGHT))){
+            if ((juego.controles.estaSiendoPulsado(Input.UP)) || (juego.controles.estaSiendoPulsado(Input.LEFT))
+                    || (juego.controles.estaSiendoPulsado(Input.RIGHT))) {
                 teclaPulsada = true;
             }
         }
 
         // si no se pulsa ninguna tecla y el contador llega al umbral, comprueba los cambios de cámara
-        if (!teclaPulsada){
+        if (!teclaPulsada) {
             cntMovimiento++;
 
             // si no se ha llegado al límite, sale
-            if (cntMovimiento < 0x32){
+            if (cntMovimiento < 0x32) {
                 return;
             }
 
             // si hay la opción de seguir a un personaje distinto, cambia de cámara
-            if (numPersonajeCamara != opcionPersonajeCamara){
+            if (numPersonajeCamara != opcionPersonajeCamara) {
                 numPersonajeCamara = opcionPersonajeCamara;
                 cntMovimiento = opcionPersonajeCamara;
             }
@@ -359,10 +353,9 @@ class Logica {
     /////////////////////////////////////////////////////////////////////////////
 
     // comprueba los objetos que pueden coger los personajes
-    void compruebaCogerObjetos()
-    {
+    void compruebaCogerObjetos() {
         // para cada personaje
-        for (int i = 0; i < Juego.numPersonajes; i++){
+        for (int i = 0; i < Juego.numPersonajes; i++) {
             Personaje pers = juego.personajes[i];
 
             // si el personaje está cogiendo o dejando un objeto, pasa al siguiente personaje
@@ -376,7 +369,7 @@ class Logica {
             int mascara = 1 << Juego.numObjetos;
 
             // recorre los objetos que se pueden coger
-            for (int j = 0; j < Juego.numObjetos; j++){
+            for (int j = 0; j < Juego.numObjetos; j++) {
                 mascara = mascara >> 1;
 
                 // si no hay que comprobar el objeto actual, pasa al siguiente
@@ -389,21 +382,20 @@ class Logica {
     }
 
     // comprueba si el personaje que se le pasa puede dejar un objeto
-    void dejaObjeto(Personaje pers)
-    {
+    void dejaObjeto(Personaje pers) {
         int[] posicion = new int[3];
 
         // comprueba si el personaje puede dejar un objeto
         int numObj = pers.puedeDejarObjeto(posicion);
 
         // si el personaje puede dejar un objeto, lo hace
-        if (numObj != -1){
-            juego.objetos[numObj].dejar(pers, 1 << (Juego.numObjetos - 1 - numObj), posicion[0], posicion[1], posicion[2]);
+        if (numObj != -1) {
+            juego.objetos[numObj]
+                    .dejar(pers, 1 << (Juego.numObjetos - 1 - numObj), posicion[0], posicion[1], posicion[2]);
         }
     }
 
-    void compruebaCogerDejarObjetos()
-    {
+    void compruebaCogerDejarObjetos() {
         // guarda una copia de los objetos que tenemos
         int objetosGuillermo = guillermo.objetos;
         int objetosAdso = adso.objetos;
@@ -413,12 +405,13 @@ class Logica {
 
         // comprueba si los personajes dejan algún objeto
         // si se pulsa el espacio, deja un objeto (si tiene)
-        if (juego.controles.estaSiendoPulsado(Input.BUTTON)){
+        if (juego.controles.estaSiendoPulsado(Input.BUTTON)) {
             dejaObjeto(guillermo);
         }
 
         // actualiza las puertas a las que pueden entrar guillermo y adso
-        guillermo.permisosPuertas = (guillermo.permisosPuertas) | ((guillermo.objetos & LLAVE1) >> 3) | (guillermo.objetos & LLAVE2);
+        guillermo.permisosPuertas =
+                (guillermo.permisosPuertas) | ((guillermo.objetos & LLAVE1) >> 3) | (guillermo.objetos & LLAVE2);
         adso.permisosPuertas = (adso.permisosPuertas & 0xef) | ((adso.objetos & LLAVE3) << 3);
 
         // calcula los objetos que se han cambiado
@@ -426,19 +419,19 @@ class Logica {
 
         // si ha cambiado el estado de las gafas o el pergamino, y si tenemos los 2 objetos, comprueba 
         // si hay que generar el número del espejo y muestra el texto del pergamino
-        if ((difObjetos & (PERGAMINO | GAFAS)) != 0){
-            if ((guillermo.objetos & (PERGAMINO | GAFAS)) == (PERGAMINO | GAFAS)){
+        if ((difObjetos & (PERGAMINO | GAFAS)) != 0) {
+            if ((guillermo.objetos & (PERGAMINO | GAFAS)) == (PERGAMINO | GAFAS)) {
                 generaNumeroRomano();
             }
         }
 
         // si han cambiado los objetos de guillermo, actualiza el marcador
-        if (objetosGuillermo != guillermo.objetos){
+        if (objetosGuillermo != guillermo.objetos) {
             juego.marcador.dibujaObjetos(guillermo.objetos, difObjetos);
         }
 
         // recorre los objetos indicando que ya no se están cogiendo
-        for (int i = 0; i < Juego.numObjetos; i++){
+        for (int i = 0; i < Juego.numObjetos; i++) {
             juego.objetos[i].seEstaCogiendo = false;
         }
     }
@@ -447,9 +440,8 @@ class Logica {
     // métodos relacionados con las puertas
     /////////////////////////////////////////////////////////////////////////////
 
-    void compruebaAbrirCerrarPuertas()
-    {
-        for (int i = 0; i < Juego.numPuertas; i++){
+    void compruebaAbrirCerrarPuertas() {
+        for (int i = 0; i < Juego.numPuertas; i++) {
             Puerta puerta = juego.puertas[i];
 
             // inicialmente no hay que redibujar la puerta
@@ -459,25 +451,24 @@ class Logica {
             puerta.compruebaAbrirCerrar(juego.personajes);
 
             // actualiza la posición del sprite según la cámara
-            if (!juego.motor.actualizaCoordCamara(puerta)){
+            if (!juego.motor.actualizaCoordCamara(puerta)) {
                 puerta.sprite.esVisible = false;
             }
         }
     }
-    
+
     /////////////////////////////////////////////////////////////////////////////
     // acciones programadas
     /////////////////////////////////////////////////////////////////////////////
 
-    void ejecutaAccionesMomentoDia()
-    {
+    void ejecutaAccionesMomentoDia() {
         // obtiene el estado actualizado del gestor de frases
         juego.gestorFrases.actualizaEstado();
 
         // si el personaje que muestra la cámara está en medio de una animación, sale
         if ((juego.motor.personaje.contadorAnimacion & 0x01) != 0) return;
 
-        if (!avanzarMomentoDia){
+        if (!avanzarMomentoDia) {
             accionesDia.ejecutaAccionesProgramadas();
 
             return;
@@ -497,8 +488,7 @@ class Logica {
     /////////////////////////////////////////////////////////////////////////////
 
     // comprueba si se ha agotado la lámpara
-    void compruebaFinLampara()
-    {
+    void compruebaFinLampara() {
         // si adso no tiene la lámpara, sale
         if ((adso.objetos & LAMPARA) == 0) return;
 
@@ -517,29 +507,28 @@ class Logica {
         // si no se ha procesado todavía el último cambio en el estado de la lámpara, sale
         if (cambioEstadoLampara != 0) return;
 
-        if (((tiempoUsoLampara >> 8) & 0xff) == 3){
+        if (((tiempoUsoLampara >> 8) & 0xff) == 3) {
             // si el tiempo de uso de la lámpara llega a 0x300, indica que se está agotando la lámpara
             cambioEstadoLampara = 1;
-        } else if (((tiempoUsoLampara >> 8) & 0xff) == 6){
+        } else if (((tiempoUsoLampara >> 8) & 0xff) == 6) {
             // si el tiempo de uso de la lámpara llega a 0x600, indica que se ha agotado la lámpara
             cambioEstadoLampara = 2;
         }
     }
 
     // comprueba si se está acabando la noche
-    void compruebaFinNoche()
-    {
+    void compruebaFinNoche() {
         seAcabaLaNoche = false;
 
         // si esta etapa del día no tiene una duración programada, sale
         if (duracionMomentoDia == 0) return;
 
         // cada 0x100 veces, comprueba si se está acabando la noche
-        if (((duracionMomentoDia & 0xff) == 0) && (momentoDia == NOCHE)){
-            if (((duracionMomentoDia >> 8) & 0xff) == 2){
+        if (((duracionMomentoDia & 0xff) == 0) && (momentoDia == NOCHE)) {
+            if (((duracionMomentoDia >> 8) & 0xff) == 2) {
                 seAcabaLaNoche = true;
             } else {
-                if (((duracionMomentoDia >> 8) & 0xff) == 0){
+                if (((duracionMomentoDia >> 8) & 0xff) == 0) {
                     haAmanecido = true;
                 }
             }
@@ -547,8 +536,7 @@ class Logica {
     }
 
     // actualiza las variables relacionadas con el paso del tiempo
-    void actualizaVariablesDeTiempo()
-    {
+    void actualizaVariablesDeTiempo() {
         // comprueba si hay que pasar al siguiente momento del día
         compruebaFinMomentoDia();
 
@@ -560,34 +548,32 @@ class Logica {
     }
 
     // comprueba si hay que pasar al siguiente momento del día
-    void compruebaFinMomentoDia()
-    {
+    void compruebaFinMomentoDia() {
         // si esta etapa del día tiene una duración programada, comprueba si ha terminado
-        if (duracionMomentoDia != 0){
+        if (duracionMomentoDia != 0) {
             duracionMomentoDia--;
 
-            if (duracionMomentoDia == 0){
+            if (duracionMomentoDia == 0) {
                 avanzaMomentoDia();
             }
         }
     }
 
     // calcula el porcentaje de misión completada. Si se ha completado el juego, muestra el final
-    int calculaPorcentajeMision()
-    {
-        if (!investigacionCompleta){
+    int calculaPorcentajeMision() {
+        if (!investigacionCompleta) {
             // asigna un porcentaje según el tiempo que haya pasado de misión
-            int porc = 7*(dia - 1) + momentoDia;
+            int porc = 7 * (dia - 1) + momentoDia;
 
             // modifica el porcentaje según los bonus obtenidos
-            for (int i = 0; i < 16; i++){
-                if ((bonus & (1 << i)) != 0){
+            for (int i = 0; i < 16; i++) {
+                if ((bonus & (1 << i)) != 0) {
                     porc += 4;
                 }
             }
 
             // si no hemos obtenido un porcentaje >= 5%, pone el porcentaje a 0
-            if (porc < 5){
+            if (porc < 5) {
                 porc = 0;
             }
 
@@ -600,8 +586,7 @@ class Logica {
         }
     }
 
-    void reiniciaContadoresLampara()
-    {
+    void reiniciaContadoresLampara() {
         // si malaquías no tiene la lámpara y no se ha usado, sale
         if (((malaquias.objetos & LAMPARA) == 0) && (tiempoUsoLampara == 0)) return;
 
@@ -629,13 +614,12 @@ class Logica {
 /////////////////////////////////////////////////////////////////////////////
 
     // si el espejo está cerrado, actualiza los sprites de los reflejos de adso y guillermo
-    void realizaReflejoEspejo()
-    {
-        if (espejoCerrado){
-            if (!reflejaPersonaje(guillermo, juego.sprites[Juego.spritesReflejos])){
+    void realizaReflejoEspejo() {
+        if (espejoCerrado) {
+            if (!reflejaPersonaje(guillermo, juego.sprites[Juego.spritesReflejos])) {
                 juego.sprites[Juego.spritesReflejos].esVisible = false;
             }
-            if (!reflejaPersonaje(adso, juego.sprites[Juego.spritesReflejos + 1])){
+            if (!reflejaPersonaje(adso, juego.sprites[Juego.spritesReflejos + 1])) {
                 juego.sprites[Juego.spritesReflejos + 1].esVisible = false;
             }
         } else {
@@ -645,8 +629,7 @@ class Logica {
     }
 
     // comprueba si un personaje está enfrente del espejo, y si es así, rellena el sprite con su reflejo
-    boolean reflejaPersonaje(Personaje pers, Sprite spr)
-    {
+    boolean reflejaPersonaje(Personaje pers, Sprite spr) {
         // si no se está en la habitación del espejo, sale
         if (juego.motor.rejilla.minPosX != 0x1c) return false;
         if (juego.motor.rejilla.minPosY != 0x5c) return false;
@@ -669,10 +652,10 @@ class Logica {
         // refleja el personaje con respecto al espejo
         pers.contadorAnimacion = contadorAnimacion ^ 2;
         pers.posX = 0x21 - (oldPosX - 0x21);
-        if ((orientacion & 0x01) == 0){
+        if ((orientacion & 0x01) == 0) {
             pers.orientacion = orientacion ^ 2;
         }
-        if (pers.enDesnivel){
+        if (pers.enDesnivel) {
             pers.posX--;
         }
 
@@ -697,34 +680,32 @@ class Logica {
     }
 
     // comprueba si se está delante del espejo y si se ha pulsado la Q y la R en alguna de las escaleras
-    int pulsadoQR()
-    {
+    int pulsadoQR() {
         // si no está delante del espejo, sale
-        if ((guillermo.posX != 0x22) || (guillermo.altura != 0x1a)){
+        if ((guillermo.posX != 0x22) || (guillermo.altura != 0x1a)) {
             return 0;
         }
 
         // si no se ha pulsado la Q y la R, sale
-        if (!juego.controles.estaSiendoPulsado(Input.Q) || !juego.controles.estaSiendoPulsado(Input.R)){
+        if (!juego.controles.estaSiendoPulsado(Input.Q) || !juego.controles.estaSiendoPulsado(Input.R)) {
             return 0;
         }
 
         // comprueba si se ha pulsado la Q y la R en una de las escaleras
-        switch (guillermo.posY){
-            case 0x6d:	// si está en la escalera de la izquierda, sale devolviendo 1
+        switch (guillermo.posY) {
+            case 0x6d:    // si está en la escalera de la izquierda, sale devolviendo 1
                 return 1;
-            case 0x69:	// si está en la escalera del centro, sale devolviendo 2
+            case 0x69:    // si está en la escalera del centro, sale devolviendo 2
                 return 2;
-            case 0x65:	// si está en la escalera de la derecha, sale devolviendo 3
+            case 0x65:    // si está en la escalera de la derecha, sale devolviendo 3
                 return 3;
-            default:	// en otro caso, devuelve 0
+            default:    // en otro caso, devuelve 0
                 return 0;
         }
     }
 
     // comprueba si se ha pulsado QR en la habitación del espejo y actúa en consecuencia
-    void compruebaAbreEspejo()
-    {
+    void compruebaAbreEspejo() {
         // si se ha abierto el espejo, sale
         if (!espejoCerrado) return;
 
@@ -738,7 +719,7 @@ class Logica {
         bonus |= 0x0400;
 
         // si pulsó QR en el lugar correcto
-        if (estadoQR == numeroRomano){
+        if (estadoQR == numeroRomano) {
             // modifica los datos de altura de la habitación del espejo para que guillermo puede atravesarlo
             juego.gameData(despDatosAlturaEspejo, 0xff);
 
@@ -750,7 +731,7 @@ class Logica {
             haFracasado = true;
 
             // cambia los datos de un bloque de la habitación del espejo para que se abra una trampa y se caiga guillermo
-            juego.gameData(despBloqueEspejo - 2,0x6b);
+            juego.gameData(despBloqueEspejo - 2, 0x6b);
 
             // escribe en el marcador la frase: ESTAIS MUERTO, FRAY GUILLERMO, HABEIS CAIDO EN LA TRAMPA
             juego.gestorFrases.muestraFrase(0x22);
@@ -762,18 +743,19 @@ class Logica {
     }
 
     // si no se había generado el número romano para el enigma de la habitación del espejo, lo genera
-    void generaNumeroRomano()
-    {
-        if (numeroRomano == 0){
+    void generaNumeroRomano() {
+        if (numeroRomano == 0) {
             // genera un número aleatorio entre 1 y 3
             numeroRomano = new Random().nextInt(4);
-            if (numeroRomano == 0){
+            if (numeroRomano == 0) {
                 numeroRomano = 1;
             }
 
             // copia el número romano a la frase que se muestra al leer el manuscrito
-            for (int i = 0; i < 3; i++){
-                GestorFrases.frases[0].setCharAt(36 + i, tablaNumerosRomanos[numeroRomano - 1].charAt(i));
+            for (int i = 0; i < 3; i++) {
+                StringBuilder str = new StringBuilder(GestorFrases.frases[0]);
+                str.setCharAt(36 + i, tablaNumerosRomanos[numeroRomano - 1].charAt(i));
+                GestorFrases.frases[0] = str.toString();
             }
         }
 
@@ -786,13 +768,12 @@ class Logica {
     /////////////////////////////////////////////////////////////////////////////
 
     // obtiene el desplazamiento hasta los datos de la habitación del espejo
-    void despHabitacionEspejo()
-    {
+    void despHabitacionEspejo() {
         // apunta a datos de altura de la segunda planta de la abadía
         int desp = 0x18000 + 0x1056;
 
         // busca el fín de la tabla
-        while (juego.gameData(desp) != 0xff){
+        while (juego.gameData(desp) != 0xff) {
             desp = ((juego.gameData(desp) & 0x08) == 0x08) ? desp + 5 : desp + 4;
         }
 
@@ -803,17 +784,17 @@ class Logica {
         desp = 0x1c000;
 
         // avanza hasta la habitación del espejo
-        for (int i = 0; i < 0x72; i++){
+        for (int i = 0; i < 0x72; i++) {
             desp = desp + (juego.gameData(desp));
         }
 
         despBloqueEspejo = 0;
 
         // recorre los datos que forman la habitación del espejo buscando el bloque del espejo
-        for (int i = 0; i < 0x100; i++){
-            if (juego.gameData(desp) == 0x1f){
+        for (int i = 0; i < 0x100; i++) {
+            if (juego.gameData(desp) == 0x1f) {
                 // si encuentra el bloque que forma el espejo y está abierto
-                if ((juego.gameData(desp + 1) == 0xaa) && (juego.gameData(desp + 2) == 0x51)){
+                if ((juego.gameData(desp + 1) == 0xaa) && (juego.gameData(desp + 2) == 0x51)) {
                     desp = desp + 2;
 
                     // modifica el bloque para que el espejo se muestre cerrado
@@ -830,8 +811,7 @@ class Logica {
     }
 
     // fija el estado inicial de la habitación del espejo
-    void iniciaHabitacionEspejo()
-    {
+    void iniciaHabitacionEspejo() {
         // inicialmente, el espejo está cerrado y no se ha generado el número romano para el enigma del espejo
         espejoCerrado = true;
         numeroRomano = 0;
@@ -839,8 +819,8 @@ class Logica {
         int datosAltura[] = { 0xf5, 0x20, 0x62, 0x0b, 0xff };
 
         // modifica los datos de altura de la habitación del espejo
-        for (int i = 0; i < 5; i++){
-            juego.gameData(despDatosAlturaEspejo + i,  datosAltura[i]);
+        for (int i = 0; i < 5; i++) {
+            juego.gameData(despDatosAlturaEspejo + i, datosAltura[i]);
         }
 
         // modifica la habitación del espejo para que el espejo aparezca cerrado
@@ -855,16 +835,14 @@ class Logica {
     /////////////////////////////////////////////////////////////////////////////
 
     // inicia los sprites del juego poniéndolos como no visibles
-    void iniciaSprites()
-    {
-        for (int i = 0; i < Juego.numSprites; i++){
+    void iniciaSprites() {
+        for (int i = 0; i < Juego.numSprites; i++) {
             juego.sprites[i].esVisible = false;
         }
     }
 
     // inicia los personajes del juego
-    void iniciaPersonajes()
-    {
+    void iniciaPersonajes() {
         // obtiene los personajes del juego
         guillermo = (Guillermo) juego.personajes[0];
         adso = (Adso) juego.personajes[1];
@@ -876,7 +854,7 @@ class Logica {
         bernardo = (Bernardo) juego.personajes[7];
 
         // recorre los personajes e inicia sus características comunes
-        for (int i = 0; i < Juego.numPersonajes; i++){
+        for (int i = 0; i < Juego.numPersonajes; i++) {
             Personaje pers = juego.personajes[i];
             pers.contadorAnimacion = 0;
             pers.orientacion = DERECHA;
@@ -890,7 +868,7 @@ class Logica {
             persIA.numBitAcciones = 0;
             persIA.pensarNuevoMovimiento = false;
             persIA.posAcciones = 0;
-            persIA.bufAcciones[0] = 0x10;	// acción para que piense un nuevo movimiento
+            persIA.bufAcciones[0] = 0x10;    // acción para que piense un nuevo movimiento
         }
 
         // guillermo
@@ -986,8 +964,7 @@ class Logica {
     }
 
     // inicia las puertas del juego
-    void iniciaPuertas()
-    {
+    void iniciaPuertas() {
         Puerta[] puertas = juego.puertas;
 
         // puerta de la habitación del abad
@@ -1052,8 +1029,7 @@ class Logica {
     }
 
     // inicia los objetos del juego
-    void iniciaObjetos()
-    {
+    void iniciaObjetos() {
         Objeto[] objetos = juego.objetos;
 
         // libro
@@ -1105,17 +1081,16 @@ class Logica {
     }
 
     // avanza el momento del día
-    void avanzaMomentoDia()
-    {
+    void avanzaMomentoDia() {
         momentoDia = momentoDia + 1;
 
         // si se han terminado los momentos del día, avanza al siguiente día
-        if (momentoDia > COMPLETAS){
+        if (momentoDia > COMPLETAS) {
             momentoDia = NOCHE;
             dia = dia + 1;
 
             // si se ha terminado el séptimo día, vuelve al primer día
-            if (dia > 7){
+            if (dia > 7) {
                 dia = 1;
             }
 
@@ -1126,6 +1101,6 @@ class Logica {
         juego.marcador.dibujaMomentoDia(momentoDia);
 
         // obtiene la duración de esta etapa del día
-        duracionMomentoDia = duracionEtapasDia[dia - 1][momentoDia]*0x100;
+        duracionMomentoDia = duracionEtapasDia[dia - 1][momentoDia] * 0x100;
     }
 }

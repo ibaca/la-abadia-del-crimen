@@ -18,7 +18,7 @@ class Controles {
         input.process(inputs);
 
         // combina el estado actual de los controles con el anterior para poder detectar pulsaciones
-        for (int i = 0; i < NUM_INPUTS; i++){
+        for (int i = 0; i < NUM_INPUTS; i++) {
             inputsHistory[i] = (inputsHistory[i] << 1) | inputs[i];
         }
     }

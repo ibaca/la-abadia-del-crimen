@@ -9,17 +9,13 @@ import static com.lavacablasa.ladc.abadia.Orientacion.IZQUIERDA;
 
 class AccionesDia {
 
-    private interface Accion {
-        void ejecuta();
-    }
-
     private final Juego juego;
-    private Accion[] acciones;
+    private final Runnable[] acciones;
 
     AccionesDia(Juego juego) {
         this.juego = juego;
-        this.acciones = new Accion[7];
-        
+        this.acciones = new Runnable[7];
+
         this.acciones[MomentosDia.NOCHE] = this::ejecutaAccionesNoche;
         this.acciones[MomentosDia.PRIMA] = this::ejecutaAccionesPrima;
         this.acciones[MomentosDia.TERCIA] = this::ejecutaAccionesTercia;
@@ -28,20 +24,19 @@ class AccionesDia {
         this.acciones[MomentosDia.VISPERAS] = this::ejecutaAccionesVisperas;
         this.acciones[MomentosDia.COMPLETAS] = this::ejecutaAccionesCompletas;
     }
-    
+
     /////////////////////////////////////////////////////////////////////////////
     // ejecución de las acciones programadas
     /////////////////////////////////////////////////////////////////////////////
 
-    void ejecutaAccionesProgramadas()
-    {
+    void ejecutaAccionesProgramadas() {
         // si no ha cambiado el momento del día, sale
         if (juego.logica.momentoDia != juego.logica.oldMomentoDia) {
             juego.logica.oldMomentoDia = juego.logica.momentoDia;
             juego.logica.cntMovimiento = 0;
 
             // ejecuta unas acciones dependiendo del momento del día
-            acciones[juego.logica.momentoDia].ejecuta();
+            acciones[juego.logica.momentoDia].run();
         }
     }
 
@@ -49,15 +44,14 @@ class AccionesDia {
     // acciones programadas según el momento del día
     /////////////////////////////////////////////////////////////////////////////
 
-    private void ejecutaAccionesNoche()
-    {
-        if (juego.logica.dia == 5){
+    private void ejecutaAccionesNoche() {
+        if (juego.logica.dia == 5) {
             // pone las gafas en la habitación iluminada del laberinto
             colocaObjeto(juego.objetos[2], 0x1b, 0x23, 0x18);
 
             // pone la llave 1 en el altar
             colocaObjeto(juego.objetos[4], 0x89, 0x3e, 0x08);
-        } else if (juego.logica.dia == 6){
+        } else if (juego.logica.dia == 6) {
             // pone la llave de la habitación de severino en la mesa de malaquías
             colocaObjeto(juego.objetos[5], 0x35, 0x35, 0x13);
 
@@ -67,8 +61,7 @@ class AccionesDia {
         }
     }
 
-    private void ejecutaAccionesPrima()
-    {
+    private void ejecutaAccionesPrima() {
         // dibuja el efecto de la espiral
         dibujaEfectoEspiral();
 
@@ -88,19 +81,19 @@ class AccionesDia {
         juego.puertas[6].estaFija = true;
         juego.puertas[6].estaAbierta = true;
 
-        if (juego.logica.dia >= 3){
+        if (juego.logica.dia >= 3) {
             // si se ha usado la lámpara, desaparece
             juego.logica.reiniciaContadoresLampara();
 
             // si la lámpara había desaparecido, la pone en la cocina
-            if (juego.logica.lamparaDesaparecida){
+            if (juego.logica.lamparaDesaparecida) {
                 juego.logica.lamparaDesaparecida = false;
 
                 colocaObjeto(juego.objetos[7], 0x5a, 0x2a, 0x04);
             }
         }
 
-        if (juego.logica.dia == 2){
+        if (juego.logica.dia == 2) {
             // desaparecen las gafas
             juego.logica.guillermo.objetos &= 0xdf;
             juego.logica.berengario.objetos &= 0xdf;
@@ -111,7 +104,7 @@ class AccionesDia {
             juego.marcador.dibujaObjetos(juego.logica.guillermo.objetos, 0xff);
         }
 
-        if (juego.logica.dia == 3){
+        if (juego.logica.dia == 3) {
             // jorge coge el libro y lo esconde
             juego.logica.jorge.objetos = LIBRO;
             colocaObjeto(juego.objetos[0], 0x0f, 0x2e, 0x00);
@@ -129,27 +122,25 @@ class AccionesDia {
             juego.logica.abad.objetos = 0;
 
             // si guillermo no tiene el pergamino, se coloca en la habitación de detrás del espejo
-            if ((juego.logica.guillermo.objetos & PERGAMINO) == 0){
+            if ((juego.logica.guillermo.objetos & PERGAMINO) == 0) {
                 colocaObjeto(juego.objetos[3], 0x18, 0x64, 0x18);
                 juego.logica.pergaminoGuardado = true;
             }
         }
 
         // si es el quinto día y no tenemos la llave 1, ésta desaparece
-        if ((juego.logica.dia == 5) && ((juego.logica.guillermo.objetos & LLAVE1) == 0)){
+        if ((juego.logica.dia == 5) && ((juego.logica.guillermo.objetos & LLAVE1) == 0)) {
             colocaObjeto(juego.objetos[4], 0, 0, 0);
         }
     }
 
-    private void ejecutaAccionesTercia()
-    {
+    private void ejecutaAccionesTercia() {
         // dibuja el efecto de la espiral
         dibujaEfectoEspiral();
     }
 
-    private void ejecutaAccionesSexta()
-    {
-        if (juego.logica.dia == 4){
+    private void ejecutaAccionesSexta() {
+        if (juego.logica.dia == 4) {
             // bernardo gui aparece en las escaleras de la abadía
             juego.logica.bernardo.estaEnLaAbadia = true;
             colocaPersonaje(juego.logica.bernardo, 0x88, 0x88, 0x02, DERECHA);
@@ -159,24 +150,21 @@ class AccionesDia {
         }
     }
 
-    private void ejecutaAccionesNona()
-    {
+    private void ejecutaAccionesNona() {
         // dibuja el efecto de la espiral
         dibujaEfectoEspiral();
 
         // si es el tercer día, jorge pasa a estar inactivo y desaparece
-        if (juego.logica.dia == 3){
+        if (juego.logica.dia == 3) {
             juego.logica.jorge.estaActivo = false;
             juego.logica.jorge.posX = juego.logica.jorge.posY = juego.logica.jorge.altura = 0;
         }
     }
 
-    private void ejecutaAccionesVisperas()
-    {
+    private void ejecutaAccionesVisperas() {
     }
 
-    private void ejecutaAccionesCompletas()
-    {
+    private void ejecutaAccionesCompletas() {
         // dibuja el efecto de la espiral
         dibujaEfectoEspiral();
 
@@ -192,8 +180,7 @@ class AccionesDia {
     /////////////////////////////////////////////////////////////////////////////
 
     // genera el efecto de la espiral
-    private void dibujaEfectoEspiral()
-    {
+    private void dibujaEfectoEspiral() {
         juego.marcador.dibujaEspiral();
 
         // indica un cambio de pantalla
@@ -204,8 +191,7 @@ class AccionesDia {
     // método de ayuda para colocar los objetos y los personajes
     /////////////////////////////////////////////////////////////////////////////
 
-    private void colocaObjeto(Objeto obj, int posX, int posY, int altura)
-    {
+    private void colocaObjeto(Objeto obj, int posX, int posY, int altura) {
         obj.seHaCogido = false;
         obj.seEstaCogiendo = false;
         obj.personaje = null;
@@ -215,8 +201,7 @@ class AccionesDia {
         obj.orientacion = DERECHA;
     }
 
-    private void colocaPersonaje(Personaje pers, int posX, int posY, int altura, int orientacion)
-    {
+    private void colocaPersonaje(Personaje pers, int posX, int posY, int altura, int orientacion) {
         pers.posX = posX;
         pers.posY = posY;
         pers.altura = altura;

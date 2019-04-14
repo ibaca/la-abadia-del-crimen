@@ -5,10 +5,10 @@ import com.lavacablasa.ladc.core.TimingHandler;
 
 class Pergamino {
 
-    private static final int SCROLL_TOP     = 0x788a;
-    private static final int SCROLL_RIGHT   = 0x7a0a;
-    private static final int SCROLL_LEFT    = 0x7b8a;
-    private static final int SCROLL_BOTTOM  = 0x7d0a;
+    private static final int SCROLL_TOP = 0x788a;
+    private static final int SCROLL_RIGHT = 0x7a0a;
+    private static final int SCROLL_LEFT = 0x7b8a;
+    private static final int SCROLL_BOTTOM = 0x7d0a;
     // campos
     private final Juego juego;
 
@@ -33,8 +33,7 @@ class Pergamino {
     }
 
     // métodos de ayuda
-    private void dibuja()
-    {
+    private void dibuja() {
         // limpia la memoria de video
         juego.cpc6128.fillMode1Rect(0, 0, 320, 200, 0);
 
@@ -58,12 +57,12 @@ class Pergamino {
 
     private void dibujaTiraHorizontal(int y, int pos) {
         // recorre el ancho del pergamino
-        for (int i = 0; i < 192/4; i++){
+        for (int i = 0; i < 192 / 4; i++) {
             // la parte superior ocupa 8 pixels de alto
-            for (int j = 0; j < 8; j++){
+            for (int j = 0; j < 8; j++) {
                 int value = juego.gameData(pos);
-                for (int k = 0; k < 4; k++){
-                    juego.cpc6128.setMode1Pixel(64 + 4*i + k, j + y, juego.cpc6128.unpackPixelMode1(value, k));
+                for (int k = 0; k < 4; k++) {
+                    juego.cpc6128.setMode1Pixel(64 + 4 * i + k, j + y, CPC6128.unpackPixelMode1(value, k));
                 }
                 pos++;
             }
@@ -72,12 +71,12 @@ class Pergamino {
 
     private void dibujaTiraVertical(int x, int pos) {
         // recorre el alto del pergamino
-        for (int j = 0; j < 192; j++){
+        for (int j = 0; j < 192; j++) {
             // lee 8 pixels y los escribe en pantalla
-            for (int i = 0; i < 2; i++){
+            for (int i = 0; i < 2; i++) {
                 int value = juego.gameData(pos);
-                for (int k = 0; k < 4; k++){
-                    juego.cpc6128.setMode1Pixel(x + 4*i + k, j, juego.cpc6128.unpackPixelMode1(value, k));
+                for (int k = 0; k < 4; k++) {
+                    juego.cpc6128.setMode1Pixel(x + 4 * i + k, j, CPC6128.unpackPixelMode1(value, k));
                 }
                 pos++;
             }
@@ -97,7 +96,7 @@ class Pergamino {
 
         // repite hasta que se pulse el botón 1
         int pos = 0;
-        while (true){
+        while (true) {
             juego.controles.actualizaEstado();
 
             // si se pulsó el botón 1 o espacio, termina
@@ -106,39 +105,39 @@ class Pergamino {
             } else {
                 // dependiendo del carácter leido
                 char c = texto.charAt(pos);
-                switch (c){
-                    case 0x1a:			// fín de pergamino
+                switch (c) {
+                    case 0x1a:            // fín de pergamino
                         break;
-                    case 0x0d:			// salto de línea
+                    case 0x0d:            // salto de línea
                         posX = 76;
                         posY += 16;
                         timer.sleep(600);
 
                         // si hay que pasar página del pergamino
-                        if (posY > 164){
+                        if (posY > 164) {
                             posX = 76;
                             posY = 16;
                             timer.sleep(2000);
                             pasaPagina();
                         }
                         break;
-                    case 0x20:			// espacio
+                    case 0x20:            // espacio
                         posX += 10;
                         timer.sleep(30);
                         break;
-                    case 0x0a:			// salto de página
+                    case 0x0a:            // salto de página
                         posX = 76;
                         posY = 16;
-                        timer.sleep(3*525);
+                        timer.sleep(3 * 525);
                         pasaPagina();
                         break;
 
-                    default:			// carácter imprimible
+                    default:            // carácter imprimible
                         // elige un color dependiendo de si es mayúsculas o minúsculas
                         int color = (((c) & 0x60) == 0x40) ? 3 : 2;
 
                         // obtiene el desplazamiento a los datos de formación del carácter
-                        int charOffset = juego.gameDataW(charTable + 2 *(c - 0x20));
+                        int charOffset = juego.gameDataW(charTable + 2 * (c - 0x20));
 
                         // si el caracter no está definido, muestra una 'z'
                         if (charOffset == 0) {
@@ -146,7 +145,7 @@ class Pergamino {
                         }
 
                         // mientras queden trazos del carácter
-                        while ((juego.gameData(charOffset) & 0xf0) != 0xf0){
+                        while ((juego.gameData(charOffset) & 0xf0) != 0xf0) {
                             // halla el desplazamiento del trazo
                             int newPosX = posX + (juego.gameData(charOffset) & 0x0f);
                             int newPosy = posY + ((juego.gameData(charOffset) >> 4) & 0x0f);
@@ -160,12 +159,12 @@ class Pergamino {
                             timer.sleep(8);
                         }
 
-                    // avanza la posición hasta el siguiente carácter
-                    posX += juego.gameData(charOffset) & 0x0f;
+                        // avanza la posición hasta el siguiente carácter
+                        posX += juego.gameData(charOffset) & 0x0f;
                 }
 
                 // apunta al siguiente carácter a imprimir
-                if (c != 0x1a){
+                if (c != 0x1a) {
                     pos++;
                 }
             }
@@ -177,16 +176,16 @@ class Pergamino {
      * pixels a la derecha de la hipotenusa del triángulo con el color 0
      */
     private void dibujaTriangulo(int x, int y, int dim) {
-        dim = dim *4;
+        dim = dim * 4;
 
-        for (int j = 0; j < dim; j++){
+        for (int j = 0; j < dim; j++) {
             // dibuja el triángulo
-            for (int i = 0; i <= j; i++){
+            for (int i = 0; i <= j; i++) {
                 juego.cpc6128.setMode1Pixel(x + i, y + j, 1);
             }
 
             // elimina restos de una ejecución anterior
-            for (int i = 0; i < 4; i++){
+            for (int i = 0; i < 4; i++) {
                 juego.cpc6128.setMode1Pixel(x + j + i + 1, y + j, 0);
             }
         }
@@ -198,15 +197,15 @@ class Pergamino {
         x = x + 4;
 
         // apunta a los datos borrados del borde superior del pergamino
-        int data = SCROLL_TOP + (48 - lado)*4*2;
+        int data = SCROLL_TOP + (48 - lado) * 4 * 2;
 
         // 8 pixels de ancho
-        for (int i = 0; i < 2; i++){
+        for (int i = 0; i < 2; i++) {
             // 8 pixels de alto
-            for (int j = 0; j < 8; j++){
+            for (int j = 0; j < 8; j++) {
                 int value = juego.gameData(data);
-                for (int k = 0; k < 4; k++){
-                    juego.cpc6128.setMode1Pixel(x + 4*i + k, y + j, juego.cpc6128.unpackPixelMode1(value, k));
+                for (int k = 0; k < 4; k++) {
+                    juego.cpc6128.setMode1Pixel(x + 4 * i + k, y + j, CPC6128.unpackPixelMode1(value, k));
                 }
                 data++;
             }
@@ -216,15 +215,15 @@ class Pergamino {
         y = (lado - 3) * 4;
 
         // apunta a los datos borrados de la parte derecha del pergamino
-        data = SCROLL_RIGHT + y*2;
+        data = SCROLL_RIGHT + y * 2;
 
         // 8 pixels de alto
-        for (int j = 0; j < 8; j++){
+        for (int j = 0; j < 8; j++) {
             // 8 pixels de ancho
-            for (int i = 0; i < 2; i++){
+            for (int i = 0; i < 2; i++) {
                 int value = juego.gameData(data);
-                for (int k = 0; k < 4; k++){
-                    juego.cpc6128.setMode1Pixel(x + 4*i + k, y + j, juego.cpc6128.unpackPixelMode1(value, k));
+                for (int k = 0; k < 4; k++) {
+                    juego.cpc6128.setMode1Pixel(x + 4 * i + k, y + j, CPC6128.unpackPixelMode1(value, k));
                 }
                 data++;
             }
@@ -233,17 +232,17 @@ class Pergamino {
 
     // restaura un trozo de 4x8 pixels de la parte inferior del pergamino
     private void restauraParteInferior(int x, int y, int lado) {
-        x = 64 + lado*4;
+        x = 64 + lado * 4;
         y = 184;
 
         // apunta a los datos borrados del borde inferior del pergamino
-        int data = SCROLL_BOTTOM + lado*4*2;
+        int data = SCROLL_BOTTOM + lado * 4 * 2;
 
         // dibuja un trozo de 4x8 pixels de la parte inferior del pergamino
-        for (int j = 0; j < 8; j++){
+        for (int j = 0; j < 8; j++) {
             int value = juego.gameData(data);
-            for (int k = 0; k < 4; k++){
-                juego.cpc6128.setMode1Pixel(x + k, y + j, juego.cpc6128.unpackPixelMode1(value, k));
+            for (int k = 0; k < 4; k++) {
+                juego.cpc6128.setMode1Pixel(x + k, y + j, CPC6128.unpackPixelMode1(value, k));
             }
             data++;
         }
@@ -258,7 +257,7 @@ class Pergamino {
         int dim = 3;
 
         // realiza el efecto del paso de página desde la esquina superior derecha hasta la mitad de la página
-        for (int num = 0; num < 45; num++){
+        for (int num = 0; num < 45; num++) {
             dibujaTriangulo(x, y, dim);
             timer.sleep(20);
             restauraParteSuperiorYDerecha(x, y, dim);
@@ -273,21 +272,21 @@ class Pergamino {
         dim = 47;
 
         // realiza el efecto del paso de página desde la mitad de la página hasta terminar en la esquina inferior izquierda
-        for (int num = 0; num < 46; num++){
+        for (int num = 0; num < 46; num++) {
             dibujaTriangulo(x, y, dim);
             timer.sleep(20);
 
             y = y - 4;
 
             // apunta a los datos borrados del borde izquierdo del pergamino
-            int data = SCROLL_LEFT + y*2;
+            int data = SCROLL_LEFT + y * 2;
 
             // dibuja un trozo de 8x4 de la parte izquierda del pergamino
-            for (int j = 0; j < 4; j++){
-                for (int i = 0; i < 2; i++){
+            for (int j = 0; j < 4; j++) {
+                for (int i = 0; i < 2; i++) {
                     int value = juego.gameData(data);
-                    for (int k = 0; k < 4; k++){
-                        juego.cpc6128.setMode1Pixel(x + 4*i + k, y + j, juego.cpc6128.unpackPixelMode1(value, k));
+                    for (int k = 0; k < 4; k++) {
+                        juego.cpc6128.setMode1Pixel(x + 4 * i + k, y + j, CPC6128.unpackPixelMode1(value, k));
                     }
                     data++;
                 }

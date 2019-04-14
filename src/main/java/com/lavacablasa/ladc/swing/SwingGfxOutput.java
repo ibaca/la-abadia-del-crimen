@@ -1,15 +1,10 @@
 package com.lavacablasa.ladc.swing;
 
 import com.lavacablasa.ladc.core.GfxOutput;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-
-import java.awt.*;
+import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import javax.swing.JFrame;
 
 public class SwingGfxOutput implements GfxOutput {
 
@@ -21,25 +16,6 @@ public class SwingGfxOutput implements GfxOutput {
         this.frame = frame;
         this.colors = new int[32];
         this.buffer = new BufferedImage(320, 200, BufferedImage.TYPE_INT_ARGB);
-    }
-
-    @Override
-    public void takeScreenShot() {
-        int num = 0;
-        boolean taken = false;
-        try {
-            while (!taken) {
-                File outputFile = new File("screenshot" + num + ".png");
-                if (!outputFile.exists()) {
-                    ImageIO.write(buffer, "png", outputFile);
-                    taken = true;
-                } else {
-                    num++;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -56,7 +32,7 @@ public class SwingGfxOutput implements GfxOutput {
                 Graphics graphics = strategy.getDrawGraphics();
 
                 // Render to graphics
-                graphics.drawImage(buffer, 0,40,640, 400,null);
+                graphics.drawImage(buffer, 0, 40, 640, 400, null);
 
                 // Dispose the graphics
                 graphics.dispose();

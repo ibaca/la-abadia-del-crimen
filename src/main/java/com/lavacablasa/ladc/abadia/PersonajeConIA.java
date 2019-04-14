@@ -1,11 +1,10 @@
 package com.lavacablasa.ladc.abadia;
 
-
 class PosicionesPredefinidas {
-    public static final int POS_GUILLERMO   = -1;
-    public static final int POS_ABAD        = -2;
-    public static final int POS_LIBRO       = -3;
-    public static final int POS_PERGAMINO   = -4;
+    public static final int POS_GUILLERMO = -1;
+    public static final int POS_ABAD = -2;
+    public static final int POS_LIBRO = -3;
+    public static final int POS_PERGAMINO = -4;
 }
 
 abstract class PersonajeConIA extends Personaje {
@@ -17,18 +16,19 @@ abstract class PersonajeConIA extends Personaje {
     /////////////////////////////////////////////////////////////////////////////
 
     private static final int[][] comandosGirar = {
-        { 0x8000, 1 },	// avanzar una posición hacia delante (no debería llamarse nunca)
-        { 0x4000, 3 },	// girar a la derecha
-        { 0x6c00, 6 },	// girar 2 veces a la izquierda
-        { 0x6000, 3 }	// girar a la izquierda
+            { 0x8000, 1 },    // avanzar una posición hacia delante (no debería llamarse nunca)
+            { 0x4000, 3 },    // girar a la derecha
+            { 0x6c00, 6 },    // girar 2 veces a la izquierda
+            { 0x6000, 3 }    // girar a la izquierda
     };
 
     private static final int[][] comandosAvanzar = {
-        { 0x8000, 2 },	// si está girado, avanza, en otro caso sube (y sigue ocupando una posición) (sólo usado si el personaje ocupa una posición)
-        { 0x2000, 4 },	// sube (y si ocupaba una posición pasa a ocupar 4 posiciones)
-        { 0xc000, 2 },	// baja (y sigue ocupando una posición)
-        { 0x3000, 4 },	// baja (y si ocupaba una posición pasa a ocupar 4 posiciones)
-        { 0x8000, 1 }	// avanza (sólo usado si el personaje ocupa 4 posiciones)
+            { 0x8000, 2 },
+            // si está girado, avanza, en otro caso sube (y sigue ocupando una posición) (sólo usado si el personaje ocupa una posición)
+            { 0x2000, 4 },    // sube (y si ocupaba una posición pasa a ocupar 4 posiciones)
+            { 0xc000, 2 },    // baja (y sigue ocupando una posición)
+            { 0x3000, 4 },    // baja (y si ocupaba una posición pasa a ocupar 4 posiciones)
+            { 0x8000, 1 }    // avanza (sólo usado si el personaje ocupa 4 posiciones)
     };
 
     /////////////////////////////////////////////////////////////////////////////
@@ -36,10 +36,10 @@ abstract class PersonajeConIA extends Personaje {
     /////////////////////////////////////////////////////////////////////////////
 
     private static final int[][] distanciasOri = {
-        { 6, 24, 6, 12 },
-        { 6, 12, 12, 24 },
-        { 12, 24, 6, 12 },
-        { 6, 12, 6, 24 }
+            { 6, 24, 6, 12 },
+            { 6, 12, 12, 24 },
+            { 12, 24, 6, 12 },
+            { 6, 12, 6, 24 }
     };
 
     int numBitAcciones;                 // indica el número de bits procesados del byte de acciones actual
@@ -74,8 +74,7 @@ abstract class PersonajeConIA extends Personaje {
     /////////////////////////////////////////////////////////////////////////////
 
     // método llamado desde el bucle principal para que el personaje interactue con el mundo virtual
-    void run()
-    {
+    void run() {
         // inicialmente el personaje va a tratar de moverse
         juego.logica.buscRutas.seBuscaRuta = true;
 
@@ -93,10 +92,9 @@ abstract class PersonajeConIA extends Personaje {
     }
 
     // interpreta los comandos almacenados en el buffer de acciones para moverse a donde quiere
-    void ejecutaMovimiento()
-    {
+    void ejecutaMovimiento() {
         // si tiene que pensar a donde moverse, sale
-        if (pensarNuevoMovimiento){
+        if (pensarNuevoMovimiento) {
             return;
         }
 
@@ -110,10 +108,10 @@ abstract class PersonajeConIA extends Personaje {
         if (comando == -1) return;
 
         // si hay que girar, gira y sale
-        if (comando == 3){
+        if (comando == 3) {
             gira(1);
             return;
-        } else if (comando == 2){
+        } else if (comando == 2) {
             gira(-1);
             return;
         }
@@ -130,17 +128,17 @@ abstract class PersonajeConIA extends Personaje {
         // que se está mostrando actualmente, el movimiento se realiza de forma precisa y sin hacer trampas
 
         // obtiene la altura de las posiciones hacia las que se va a mover
-        if (!juego.motor.rejilla.obtenerAlturaPosicionesAvance(this, difAltura, avance)){
+        if (!juego.motor.rejilla.obtenerAlturaPosicionesAvance(this, difAltura, avance)) {
             // si llega aquí es porque el personaje no está en la pantalla que muestra la cámara
 
             // si el personaje ocupa 4 posiciones
-            if (!enDesnivel){
-                difAltura[1] = 0;	// no se utilizará en trataDeAvanzar
+            if (!enDesnivel) {
+                difAltura[1] = 0;    // no se utilizará en trataDeAvanzar
 
-                if (comando == 1){
+                if (comando == 1) {
                     difAltura[0] = 0;
                 } else {
-                    if (comando == 5){
+                    if (comando == 5) {
                         difAltura[0] = -1;
                     } else { // comando == 4
                         difAltura[0] = 1;
@@ -148,19 +146,24 @@ abstract class PersonajeConIA extends Personaje {
                 }
             } else {
                 // si el personaje ocupa una posición
-                if (comando == 0){
-                    if (giradoEnDesnivel){
-                        difAltura[0] = 0; difAltura[1] = 0;
+                if (comando == 0) {
+                    if (giradoEnDesnivel) {
+                        difAltura[0] = 0;
+                        difAltura[1] = 0;
                     } else {
-                        difAltura[0] = 1; difAltura[1] = 2;
+                        difAltura[0] = 1;
+                        difAltura[1] = 2;
                     }
                 } else {
-                    if (comando == 1){
-                        difAltura[0] = -1; difAltura[1] = -2;
-                    } else if (comando == 4){
-                        difAltura[0] = 1; difAltura[1] = 1;
+                    if (comando == 1) {
+                        difAltura[0] = -1;
+                        difAltura[1] = -2;
+                    } else if (comando == 4) {
+                        difAltura[0] = 1;
+                        difAltura[1] = 1;
                     } else { // comando == 5
-                        difAltura[0] = -1; difAltura[1] = -1;
+                        difAltura[0] = -1;
+                        difAltura[1] = -1;
                     }
                 }
             }
@@ -172,17 +175,16 @@ abstract class PersonajeConIA extends Personaje {
         trataDeAvanzar(difAltura[0], difAltura[1], avance[0], avance[1]);
 
         // si el personaje no ha podido moverse a donde quería, deshace los cambios
-        if (!juego.logica.hayMovimiento){
+        if (!juego.logica.hayMovimiento) {
             cargaEstado();
         }
     }
 
     // devuelve el siguiente bit de los comandos almacenados en el buffer
-    int leeBit()
-    {
+    int leeBit() {
         // si se han terminado los bits de la accion actual, obtiene un nuevo byte de comandos
-        if (numBitAcciones == 0){
-            assert(posAcciones < 0x30);
+        if (numBitAcciones == 0) {
+            assert (posAcciones < 0x30);
 
             accionActual = bufAcciones[posAcciones] & 0xff;
             posAcciones++;
@@ -197,32 +199,31 @@ abstract class PersonajeConIA extends Personaje {
         return bitAccion ? 1 : 0;
     }
 
-    int leeComando()
-    {
+    int leeComando() {
         // comprueba si el personaje tiene que avanzar y si es así, devuelve 0 o 1
-        if (enDesnivel){
-            if (leeBit() == 1){
+        if (enDesnivel) {
+            if (leeBit() == 1) {
                 return leeBit();
             }
         } else {
-            if (leeBit() == 1){
+            if (leeBit() == 1) {
                 return 1;
             }
         }
 
         // si es un comando de giro, devuelve 2 o 3
-        if (leeBit() == 1){
+        if (leeBit() == 1) {
             return 2 + leeBit();
         }
 
         // si es un comando para subir o bajar, devuelve 4 o 5
-        if (leeBit() == 1){
+        if (leeBit() == 1) {
             return 4 + leeBit();
         }
 
         // si se leyó 0000
-        if (leeBit() == 0){
-            if (enDesnivel){
+        if (leeBit() == 0) {
+            if (enDesnivel) {
                 return 0;
             } else {
                 // reinicia los contadores
@@ -244,15 +245,14 @@ abstract class PersonajeConIA extends Personaje {
     /////////////////////////////////////////////////////////////////////////////
 
     // escribe los comandos necesarios para obtener la orientación desesada
-    void modificaOrientacion(int oriDeseada)
-    {
+    void modificaOrientacion(int oriDeseada) {
         // calcula cuanto hay que girar
         int difOri = orientacion - oriDeseada;
 
-        if (difOri < 0){
+        if (difOri < 0) {
             difOri = (-difOri) ^ 2;
 
-            if (difOri == 0){
+            if (difOri == 0) {
                 difOri = 2;
             }
         }
@@ -262,19 +262,18 @@ abstract class PersonajeConIA extends Personaje {
     }
 
     // escribe unos comandos dependiendo de si el personaje sube, baja o se mantiene
-    void avanzaPosicion(int difAltura1, int difAltura2, int avanceX, int avanceY)
-    {
+    void avanzaPosicion(int difAltura1, int difAltura2, int avanceX, int avanceY) {
         int numEntrada;
         bajando = false;
 
         // si el personaje ocupa 4 posiciones
-        if (!enDesnivel){
+        if (!enDesnivel) {
             // si se quiere subir o bajar, cambia la altura e indica que el personaje está en desnivel
-            if (difAltura1 == 1){
+            if (difAltura1 == 1) {
                 numEntrada = 1;
                 altura++;
                 enDesnivel = true;
-            } else if (difAltura1 == -1){
+            } else if (difAltura1 == -1) {
                 numEntrada = 3;
                 altura--;
                 enDesnivel = true;
@@ -285,10 +284,10 @@ abstract class PersonajeConIA extends Personaje {
             }
 
             // si se pasa a una zona con desnivel
-            if (enDesnivel){
+            if (enDesnivel) {
                 incrementaPos(avanceX, avanceY);
 
-                if (cambioCentro()){
+                if (cambioCentro()) {
                     incrementaPos(avanceX, avanceY);
                 }
             }
@@ -297,11 +296,11 @@ abstract class PersonajeConIA extends Personaje {
             numEntrada = 0;
 
             // si está girado en desnivel, avanza
-            if (giradoEnDesnivel){
+            if (giradoEnDesnivel) {
                 incrementaPos(avanceX, avanceY);
             } else {
                 // en otro caso, si quiere subir o bajar, cambia la altura
-                if (difAltura1 == 1){
+                if (difAltura1 == 1) {
                     altura++;
                 } else {
                     numEntrada = 2;
@@ -310,13 +309,13 @@ abstract class PersonajeConIA extends Personaje {
                 }
 
                 // si las 2 posiciones que hay avanzando tienen la misma altura, indica que ya no está en desnivel
-                if (difAltura1 == difAltura2){
+                if (difAltura1 == difAltura2) {
                     numEntrada++;
                     enDesnivel = false;
 
                     incrementaPos(avanceX, avanceY);
 
-                    if (!cambioCentro()){
+                    if (!cambioCentro()) {
                         incrementaPos(avanceX, avanceY);
                     }
                 } else {
@@ -330,16 +329,14 @@ abstract class PersonajeConIA extends Personaje {
     }
 
     // fija la primera posición para coger comandos del buffer
-    void reiniciaPosicionBuffer()
-    {
+    void reiniciaPosicionBuffer() {
         posAcciones = 0;
         numBitAcciones = 0;
         pensarNuevoMovimiento = false;
     }
 
     // descarta los movimientos pensados e indica que hay que pensar un nuevo movimiento
-    void descartarMovimientosPensados()
-    {
+    void descartarMovimientosPensados() {
         // descarta los movimientos anteriores
         reiniciaPosicionBuffer();
 
@@ -348,12 +345,11 @@ abstract class PersonajeConIA extends Personaje {
     }
 
     // escribe los bits de los comandos que se le pasa en el buffer de acciones del personaje
-    void escribeComandos(int comandos, int bits)
-    {
+    void escribeComandos(int comandos, int bits) {
         // para todos los bits del comando
-        for (int i = 0; i < bits; i++){
+        for (int i = 0; i < bits; i++) {
             // si se ha completado el byte actual
-            if (numBitAcciones == 8){
+            if (numBitAcciones == 8) {
                 numBitAcciones = 0;
 
                 // graba el comando actual
@@ -371,8 +367,7 @@ abstract class PersonajeConIA extends Personaje {
     }
 
     // graba los datos principales del personaje por si hay que restaurarlos
-    void grabaEstado()
-    {
+    void grabaEstado() {
         bufferDatosPersonaje[0] = orientacion;
         bufferDatosPersonaje[1] = posX;
         bufferDatosPersonaje[2] = posY;
@@ -386,8 +381,7 @@ abstract class PersonajeConIA extends Personaje {
     }
 
     // restaura los datos guardados del personaje
-    void cargaEstado()
-    {
+    void cargaEstado() {
         orientacion = bufferDatosPersonaje[0];
         posX = bufferDatosPersonaje[1];
         posY = bufferDatosPersonaje[2];
@@ -404,22 +398,21 @@ abstract class PersonajeConIA extends Personaje {
     // métodos auxiliares para la lógica
     /////////////////////////////////////////////////////////////////////////////
 
-    boolean estaCerca(Personaje pers)
-    {
+    boolean estaCerca(Personaje pers) {
         // si los 2 personajes no están en la misma planta, devuelve false
-        if (juego.motor.obtenerAlturaBasePlanta(altura) != juego.motor.obtenerAlturaBasePlanta(pers.altura)){
+        if (juego.motor.obtenerAlturaBasePlanta(altura) != juego.motor.obtenerAlturaBasePlanta(pers.altura)) {
             return false;
         }
 
         // si la distancia en X supera un umbral, devuelve false
         int dist = pers.posX - posX + distanciasOri[orientacion][0];
-        if ((dist < 0) || (dist >= distanciasOri[orientacion][1])){
+        if ((dist < 0) || (dist >= distanciasOri[orientacion][1])) {
             return false;
         }
 
         // si la distancia en Y supera un umbral, devuelve false
         dist = pers.posY - posY + distanciasOri[orientacion][2];
-        if ((dist < 0) || (dist >= distanciasOri[orientacion][3])){
+        if ((dist < 0) || (dist >= distanciasOri[orientacion][3])) {
             return false;
         }
 
@@ -428,9 +421,8 @@ abstract class PersonajeConIA extends Personaje {
     }
 
     // si ha llegado al sitio al que quería llegar, avanza el estado
-    boolean siHaLlegadoAvanzaEstado()
-    {
-        if (aDondeHaLlegado != aDondeVa){
+    boolean siHaLlegadoAvanzaEstado() {
+        if (aDondeHaLlegado != aDondeVa) {
             return false;
         }
 

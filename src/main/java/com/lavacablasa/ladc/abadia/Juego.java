@@ -1,13 +1,12 @@
 package com.lavacablasa.ladc.abadia;
 
+import static com.lavacablasa.ladc.abadia.MomentosDia.VISPERAS;
+
 import com.lavacablasa.ladc.core.GameContext;
 import com.lavacablasa.ladc.core.Input;
 import com.lavacablasa.ladc.core.TimingHandler;
-
 import java.util.Arrays;
 import java.util.Objects;
-
-import static com.lavacablasa.ladc.abadia.MomentosDia.VISPERAS;
 
 public class Juego {
 
@@ -54,7 +53,7 @@ public class Juego {
         this.cpc6128 = Objects.requireNonNull(cpc6128);
         this.context = Objects.requireNonNull(context);
 
-        byte[] buffer = new byte[8192];						// buffer para mezclar los sprites y para buscar las rutas
+        byte[] buffer = new byte[8192];                        // buffer para mezclar los sprites y para buscar las rutas
         this.paleta = new Paleta(this);
         this.pergamino = new Pergamino(this);
         this.gestorFrases = new GestorFrases(this);
@@ -92,7 +91,7 @@ public class Juego {
 
         // aquí ya se ha completado la inicialización de datos para el juego
         // ahora realiza la inicialización para poder empezar a jugar una partida
-        while (true){
+        while (true) {
             // inicia la lógica del juego
             logica.inicia();
 
@@ -114,7 +113,7 @@ public class Juego {
             marcador.dibujaObsequium(logica.obsequium);
             marcador.limpiaAreaFrases();
 
-            while (true){	// el bucle principal del juego empieza aquí
+            while (true) {    // el bucle principal del juego empieza aquí
                 // actualiza el estado de los controles
                 controles.actualizaEstado();
 
@@ -131,7 +130,7 @@ public class Juego {
                 logica.actualizaVariablesDeTiempo();
 
                 // si guillermo ha muerto, empieza una partida
-                if (muestraPantallaFinInvestigacion()){
+                if (muestraPantallaFinInvestigacion()) {
                     break;
                 }
 
@@ -157,7 +156,7 @@ public class Juego {
                 logica.compruebaAbrirCerrarPuertas();
 
                 // ejecuta la lógica de los personajes
-                for (int i = 0; i < numPersonajes; i++){
+                for (int i = 0; i < numPersonajes; i++) {
                     personajes[i].run();
                 }
 
@@ -177,7 +176,7 @@ public class Juego {
                 motor.dibujaSprites();
 
                 // espera un poco para actualizar el estado del juego
-                while (contadorInterrupcion < 0x24){
+                while (contadorInterrupcion < 0x24) {
                     timer.sleep(5);
                 }
 
@@ -188,7 +187,7 @@ public class Juego {
     }
 
     public void runSync() {
-        if (!pausa){
+        if (!pausa) {
             // incrementa el contador de la interrupción
             contadorInterrupcion++;
 
@@ -198,24 +197,22 @@ public class Juego {
     }
 
     // limpia el área de juego de color que se le pasa y los bordes de negro
-    void limpiaAreaJuego(int color)
-    {
+    void limpiaAreaJuego(int color) {
         cpc6128.fillMode1Rect(0, 0, 32, 160, 3);
         cpc6128.fillMode1Rect(32, 0, 256, 160, color);
         cpc6128.fillMode1Rect(32 + 256, 0, 32, 160, 3);
     }
 
-    private void generaGraficosFlipeados()
-    {
+    private void generaGraficosFlipeados() {
         byte[] tablaFlipX = new byte[256];
 
         // inicia la tabla para flipear los gráficos
-        for (int i = 0; i < 256; i++){
+        for (int i = 0; i < 256; i++) {
             // extrae los pixels
-            int pixel0 = cpc6128.unpackPixelMode1(i, 0);
-            int pixel1 = cpc6128.unpackPixelMode1(i, 1);
-            int pixel2 = cpc6128.unpackPixelMode1(i, 2);
-            int pixel3 = cpc6128.unpackPixelMode1(i, 3);
+            int pixel0 = CPC6128.unpackPixelMode1(i, 0);
+            int pixel1 = CPC6128.unpackPixelMode1(i, 1);
+            int pixel2 = CPC6128.unpackPixelMode1(i, 2);
+            int pixel3 = CPC6128.unpackPixelMode1(i, 3);
 
             int data = 0;
 
@@ -248,17 +245,16 @@ public class Juego {
     }
 
     // copia los gráficos de origen en el destino y los flipea
-    private void flipeaGraficos(byte[] tablaFlip, int src, int dest, int ancho, int bytes)
-    {
+    private void flipeaGraficos(byte[] tablaFlip, int src, int dest, int ancho, int bytes) {
         // copia los gráficos del origen al destino
         System.arraycopy(gameData, src, gameData, dest, bytes);
 
         // calcula las variables que controlan el bucle
-        int numLineas = bytes/ancho;
-        int numIntercambios = (ancho + 1)/2;
+        int numLineas = bytes / ancho;
+        int numIntercambios = (ancho + 1) / 2;
 
         // recorre todas las líneas que forman el gráfico
-        for (int j = 0; j < numLineas; j++){
+        for (int j = 0; j < numLineas; j++) {
             int ptr1 = dest;
             int ptr2 = ptr1 + ancho - 1;
 
@@ -278,8 +274,7 @@ public class Juego {
     }
 
     // actualiza el sprite de la luz para que se mueva siguiendo a adso
-    private void actualizaLuz()
-    {
+    private void actualizaLuz() {
         // desactiva el sprite de la luz
         sprites[spriteLuz].esVisible = false;
 
@@ -287,9 +282,9 @@ public class Juego {
         if (motor.pantallaIluminada) return;
 
         // si adso no es visible en la pantalla actual
-        if (!(personajes[1].sprite.esVisible)){
-            for (int i = 0; i < numSprites; i++){
-                if (sprites[i].esVisible){
+        if (!(personajes[1].sprite.esVisible)) {
+            for (int i = 0; i < numSprites; i++) {
+                if (sprites[i].esVisible) {
                     sprites[i].haCambiado = false;
                 }
             }
@@ -306,18 +301,18 @@ public class Juego {
     private void compruebaPausa() {
 
         // si se ha pulsado suprimir, se para hasta que se vuelva a pulsar
-        if (controles.seHaPulsado(Input.SUPR)){
+        if (controles.seHaPulsado(Input.SUPR)) {
             pausa = true;
-            while (pausa){
+            while (pausa) {
                 timer.sleep(10);
                 controles.actualizaEstado();
-                if (controles.seHaPulsado(Input.SUPR)){
+                if (controles.seHaPulsado(Input.SUPR)) {
                     pausa = false;
                 }
             }
         }
     }
-    
+
     /////////////////////////////////////////////////////////////////////////////
     // métodos para mostrar distintas las pantallas de distintas situaciones del juego
     /////////////////////////////////////////////////////////////////////////////
@@ -350,7 +345,7 @@ public class Juego {
 
         // espera a que se suelte el botón
         boolean espera = true;
-        while (espera){
+        while (espera) {
             timer.sleep(1);
             controles.actualizaEstado();
             espera = controles.estaSiendoPulsado(Input.BUTTON);
@@ -360,15 +355,14 @@ public class Juego {
     // muestra indefinidamente el pergamino del final
     void muestraFinal() {
 
-        while (true){
+        while (true) {
             // muestra el texto del final
             pergamino.muestraTexto(PergaminoTextos.PERGAMINO_FINAL);
         }
     }
 
     // muestra la parte de misión completada. Si se ha completado el juego, muestra el final
-    private boolean muestraPantallaFinInvestigacion()
-    {
+    private boolean muestraPantallaFinInvestigacion() {
         // si guillermo está vivo, sale
         if (!logica.haFracasado) return false;
 
@@ -392,14 +386,14 @@ public class Juego {
 
         // espera a que se pulse y se suelte el botón
         boolean espera = true;
-        while (espera){
+        while (espera) {
             controles.actualizaEstado();
             timer.sleep(1);
             espera = !(controles.estaSiendoPulsado(Input.BUTTON) || controles.estaSiendoPulsado(Input.SPACE));
         }
 
         espera = true;
-        while (espera){
+        while (espera) {
             controles.actualizaEstado();
             timer.sleep(1);
             espera = controles.estaSiendoPulsado(Input.BUTTON) || controles.estaSiendoPulsado(Input.SPACE);
@@ -413,8 +407,7 @@ public class Juego {
     /////////////////////////////////////////////////////////////////////////////
 
     // crea los sprites, personajes, puertas y objetos del juego
-    private void creaEntidadesJuego()
-    {
+    private void creaEntidadesJuego() {
         // sprites de los personajes
 
         // sprite de guillermo
@@ -424,12 +417,12 @@ public class Juego {
         sprites[1] = new Sprite();
 
         // sprite de los monjes
-        for (int i = 2; i < 8; i++){
+        for (int i = 2; i < 8; i++) {
             sprites[i] = new SpriteMonje();
         }
 
         // sprite de las puertas
-        for (int i = primerSpritePuertas; i < primerSpritePuertas + numPuertas; i++){
+        for (int i = primerSpritePuertas; i < primerSpritePuertas + numPuertas; i++) {
             sprites[i] = new Sprite();
             sprites[i].ancho = sprites[i].oldAncho = 0x06;
             sprites[i].alto = sprites[i].oldAlto = 0x28;
@@ -438,7 +431,7 @@ public class Juego {
         int[] despObjetos = { 0x88f0, 0x9fb0, 0x9f80, 0xa010, 0x9fe0, 0x9fe0, 0x9fe0, 0x88c0 };
 
         // sprite de los objetos
-        for (int i = primerSpriteObjetos; i < primerSpriteObjetos + numObjetos; i++){
+        for (int i = primerSpriteObjetos; i < primerSpriteObjetos + numObjetos; i++) {
             sprites[i] = new Sprite();
             sprites[i].ancho = sprites[i].oldAncho = 0x04;
             sprites[i].alto = sprites[i].oldAlto = 0x0c;
@@ -455,27 +448,27 @@ public class Juego {
         // crea los personajes del juego
         personajes[0] = new Guillermo(this, sprites[0]);
         personajes[1] = new Adso(this, sprites[1]);
-        personajes[2] = new Malaquias(this, (SpriteMonje)sprites[2]);
-        personajes[3] = new Abad(this, (SpriteMonje)sprites[3]);
-        personajes[4] = new Berengario(this, (SpriteMonje)sprites[4]);
-        personajes[5] = new Severino(this, (SpriteMonje)sprites[5]);
-        personajes[6] = new Jorge(this, (SpriteMonje)sprites[6]);
-        personajes[7] = new Bernardo(this, (SpriteMonje)sprites[7]);
+        personajes[2] = new Malaquias(this, (SpriteMonje) sprites[2]);
+        personajes[3] = new Abad(this, (SpriteMonje) sprites[3]);
+        personajes[4] = new Berengario(this, (SpriteMonje) sprites[4]);
+        personajes[5] = new Severino(this, (SpriteMonje) sprites[5]);
+        personajes[6] = new Jorge(this, (SpriteMonje) sprites[6]);
+        personajes[7] = new Bernardo(this, (SpriteMonje) sprites[7]);
 
         // inicia los valores comunes
-        for (int i = 0; i < 8; i++){
+        for (int i = 0; i < 8; i++) {
             personajes[i].despX = -2;
             personajes[i].despY = -34;
         }
         personajes[1].despY = -32;
 
         // crea las puertas del juego
-        for (int i = 0; i < numPuertas; i++){
+        for (int i = 0; i < numPuertas; i++) {
             puertas[i] = new Puerta(this, sprites[primerSpritePuertas + i]);
         }
 
         // crea los objetos del juego
-        for (int i = 0; i < numObjetos; i++){
+        for (int i = 0; i < numObjetos; i++) {
             objetos[i] = new Objeto(this, sprites[primerSpriteObjetos + i]);
         }
     }
@@ -489,14 +482,13 @@ public class Juego {
     }
 
     int gameDataW(int pos) {
-        return gameData[pos] & 0xff | ((gameData[pos +1] & 0xff) << 8);
+        return gameData[pos] & 0xff | ((gameData[pos + 1] & 0xff) << 8);
     }
 
     // avanza el momento del día del marcador
-    void muestraDiaYMomentoDia()
-    {
+    void muestraDiaYMomentoDia() {
         // coloca una paleta según el momento del día
-        if (logica.momentoDia < VISPERAS){
+        if (logica.momentoDia < VISPERAS) {
             paleta.setGamePalette(2);
         } else {
             paleta.setGamePalette(3);

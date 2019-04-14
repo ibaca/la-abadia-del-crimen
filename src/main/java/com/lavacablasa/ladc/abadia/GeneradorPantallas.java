@@ -19,10 +19,9 @@ class GeneradorPantallas {
 
     private static final int PARAM_1 = 0;
     private static final int PARAM_2 = 1;
-    private static final int HEIGHT  = 2;
+    private static final int HEIGHT = 2;
     private static final int DEPTH_X = 3;
     private static final int DEPTH_Y = 4;
-
 
     static class TileInfo {
         int[] profX = new int[NIVELES_PROF_TILES];    // profundidad del tile en x (en coordenadas locales)
@@ -321,7 +320,7 @@ class GeneradorPantallas {
         } else if (dato == 0x82) {
             // el 0x82 es un marcador que indica que hay que devolver el siguiente byte
             return juego.gameData(comandosBloque++);
-        } else  if (dato >= 0x6d) {
+        } else if (dato >= 0x6d) {
             // es un registro de bloque
             return datosBloque[obtenerPosRegistro(dato)];
         } else {
@@ -364,7 +363,7 @@ class GeneradorPantallas {
     // dibuja en pantalla el contenido del buffer de tiles desde el centro hacia fuera
     void dibujaBufferTiles() {
         // posición inicial en el buffer de tiles
-        int[] pos = {7, 8};
+        int[] pos = { 7, 8 };
 
         // obtiene acceso al temporizador
         TimingHandler timer = juego.timer;
@@ -430,7 +429,7 @@ class GeneradorPantallas {
                 // para cada pixel del byte leido
                 for (int k = 0; k < 4; k++) {
                     // obtiene el color del pixel
-                    int color = juego.cpc6128.unpackPixelMode1(data, k);
+                    int color = CPC6128.unpackPixelMode1(data, k);
 
                     // obtiene el color del pixel en pantalla
                     int oldColor = juego.cpc6128.getMode1Pixel(x, y);
@@ -527,7 +526,7 @@ class GeneradorPantallas {
 
         datosBloque[DEPTH_Y] = pop();
         datosBloque[DEPTH_X] = pop();
-        datosBloque[HEIGHT]  = pop();
+        datosBloque[HEIGHT] = pop();
         datosBloque[PARAM_2] = pop();
         datosBloque[PARAM_1] = pop();
 

@@ -22,7 +22,7 @@ class Objeto extends EntidadJuego {
     @Override
     void notificaVisibleEnPantalla(int posXPant, int posYPant, int profundidad) {
         // si el objeto no se ha cogido
-        if (!seHaCogido){
+        if (!seHaCogido) {
             // marca el sprite para dibujar
             sprite.haCambiado = true;
             sprite.esVisible = true;
@@ -49,7 +49,7 @@ class Objeto extends EntidadJuego {
         int alturaObj = altura;
 
         // si el objeto está cogido, su posición viene dada por la del personaje que lo tiene
-        if (seHaCogido){
+        if (seHaCogido) {
             // si el personaje no puede quitar objetos, sale
             if (!pers.puedeQuitarObjetos) return false;
 
@@ -63,19 +63,19 @@ class Objeto extends EntidadJuego {
         int difAltura = alturaObj - pers.altura;
         if ((difAltura < 0) || (difAltura >= 5)) return false;
 
-        int posXPers = pers.posX + 2*MotorGrafico.tablaDespOri[pers.orientacion][0];
+        int posXPers = pers.posX + 2 * MotorGrafico.tablaDespOri[pers.orientacion][0];
         if (posXObj != posXPers) return false;
 
-        int posYPers = pers.posY + 2*MotorGrafico.tablaDespOri[pers.orientacion][1];
+        int posYPers = pers.posY + 2 * MotorGrafico.tablaDespOri[pers.orientacion][1];
         if (posYObj != posYPers) return false;
 
         // si el objeto está cogido por un personaje, se lo quita
-        if (seHaCogido){
+        if (seHaCogido) {
             personaje.objetos = personaje.objetos ^ mascara;
         }
 
         // si el sprite del objeto es visible, indica que va a desaparecer
-        if (sprite.esVisible){
+        if (sprite.esVisible) {
             sprite.haCambiado = true;
             sprite.desaparece = true;
         }

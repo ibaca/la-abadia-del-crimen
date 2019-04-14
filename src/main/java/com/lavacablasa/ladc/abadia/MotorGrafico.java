@@ -4,10 +4,10 @@ import static com.lavacablasa.ladc.abadia.ObjetosJuego.LAMPARA;
 
 class MotorGrafico {
     static final int[][] tablaDespOri = {
-        { +1,  0 },
-        {  0, -1 },
-        { -1,  0 },
-        {  0, +1 }
+            { +1, 0 },
+            { 0, -1 },
+            { -1, 0 },
+            { 0, +1 }
     };
 
     private static final int SCREEN_DATA_BASE_ADDRESS = 0x1c000;
@@ -16,7 +16,7 @@ class MotorGrafico {
     // mapa de las plantas de la abadía
     /////////////////////////////////////////////////////////////////////////////
 
-    private static byte[][] plantas = {
+    private static byte[][] plantas = { //@formatter:off
         {
     // planta baja
     //
@@ -83,7 +83,7 @@ class MotorGrafico {
             0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   , // 0e
             0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0   ,0     // 0f
         }
-    };
+    }; //@formatter:on
 
     Juego juego;
     RejillaPantalla rejilla;        // objeto para realizar operaciones relacionadas con la rejilla de pantalla
@@ -100,7 +100,6 @@ class MotorGrafico {
 
     Personaje personaje;            // personaje al que sigue la cámara
 
-
     public MotorGrafico(Juego juego, byte[] buffer) {
         this.juego = juego;
 
@@ -114,7 +113,7 @@ class MotorGrafico {
         genPant = new GeneradorPantallas(juego);
         rejilla = new RejillaPantalla(juego);
         mezclador = new MezcladorSprites(juego, buffer);
-   }
+    }
 
     /////////////////////////////////////////////////////////////////////////////
     // comprobación del cambio de pantalla y actualización de entidades del juego
@@ -123,13 +122,12 @@ class MotorGrafico {
     // comprueba si el personaje al que sigue la cámara ha cambiado de pantalla y si es así, actualiza las variables del motor
     // obtiene los datos de altura de la nueva pantalla y ajusta las posiciones de las entidades del juego
     // según la orientación con la que se ve la pantalla actual
-    void compruebaCambioPantalla()
-    {
+    void compruebaCambioPantalla() {
         // inicialmente no hay cambio de pantalla
         boolean cambioPantalla = false;
 
         // si el personaje al que sigue la cámara cambia de pantalla en x
-        if ((personaje.posX & 0xf0) != posXPantalla){
+        if ((personaje.posX & 0xf0) != posXPantalla) {
             cambioPantalla = true;
 
             // actualiza la posición x del motor
@@ -137,7 +135,7 @@ class MotorGrafico {
         }
 
         // si el personaje al que sigue la cámara cambia de pantalla en y
-        if ((personaje.posY & 0xf0) != posYPantalla){
+        if ((personaje.posY & 0xf0) != posYPantalla) {
             cambioPantalla = true;
 
             // actualiza la posición y del motor
@@ -145,7 +143,7 @@ class MotorGrafico {
         }
 
         // si el personaje ha cambiado de planta
-        if (obtenerAlturaBasePlanta(personaje.altura) != alturaBasePantalla){
+        if (obtenerAlturaBasePlanta(personaje.altura) != alturaBasePantalla) {
             cambioPantalla = true;
 
             // actualiza la altura del motor
@@ -159,10 +157,10 @@ class MotorGrafico {
         pantallaIluminada = true;
 
         // si está en la segunda planta, comprueba si es una de las pantallas iluminadas
-        if (obtenerPlanta(alturaBasePantalla) == 2){
+        if (obtenerPlanta(alturaBasePantalla) == 2) {
             // si no está detrás del espejo o en la habitación iluminada del laberinto
-            if (posXPantalla >= 0x20){
-                if (posXPantalla != 0x20){
+            if (posXPantalla >= 0x20) {
+                if (posXPantalla != 0x20) {
                     pantallaIluminada = false;
                 } else {
                     // si está en la pantalla del espejo
@@ -175,13 +173,13 @@ class MotorGrafico {
         juego.sprites[Juego.spriteLuz].esVisible = false;
 
         // obtiene el número de pantalla que se va a mostrar
-        numPantalla = plantas[obtenerPlanta(alturaBasePantalla)][posYPantalla | ((posXPantalla  >> 4) & 0x0f)];
+        numPantalla = plantas[obtenerPlanta(alturaBasePantalla)][posYPantalla | ((posXPantalla >> 4) & 0x0f)];
 
         // rellena el buffer de alturas con los datos de altura de la pantalla actual
         rejilla.rellenaAlturasPantalla(personaje);
 
         // calcula la orientación de la cámara para la pantalla que se va a mostrar
-        oriCamara = (((posXPantalla >> 4)& 0x01) << 1) | (((posXPantalla  >> 4) & 0x01)^((posYPantalla  >> 4) & 0x01));
+        oriCamara = (((posXPantalla >> 4) & 0x01) << 1) | (((posXPantalla >> 4) & 0x01) ^ ((posYPantalla >> 4) & 0x01));
 
         // recorre las puertas, y para las visibles, actualiza su posición y marca la altura que ocupan
         actualizaPuertas();
@@ -197,8 +195,7 @@ class MotorGrafico {
     // actualización de las entidades del juego según la cámara
     /////////////////////////////////////////////////////////////////////////////
 
-    void actualizaPuertas()
-    {
+    void actualizaPuertas() {
         // recorre las puertas, y para las visibles, actualiza su posición y marca la altura que ocupan
         for (int i = 0; i < Juego.numPuertas; i++) {
             Puerta puerta = juego.puertas[i];
@@ -213,14 +210,13 @@ class MotorGrafico {
         }
     }
 
-    void actualizaObjetos()
-    {
+    void actualizaObjetos() {
         // recorre los objetos, y para los visibles, actualiza su posición
-        for (int i = 0; i < Juego.numObjetos; i++){
+        for (int i = 0; i < Juego.numObjetos; i++) {
             Objeto objeto = juego.objetos[i];
 
             // actualiza la posición del sprite según la cámara
-            if (!actualizaCoordCamara(objeto)){
+            if (!actualizaCoordCamara(objeto)) {
                 objeto.sprite.esVisible = false;
             }
 
@@ -229,10 +225,9 @@ class MotorGrafico {
         }
     }
 
-    void actualizaPersonajes()
-    {
+    void actualizaPersonajes() {
         // recorre los personajes, y para los visibles, actualiza su posición y animación y marca la altura que ocupan
-        for (int i = 0; i < Juego.numPersonajes; i++){
+        for (int i = 0; i < Juego.numPersonajes; i++) {
             Personaje pers = juego.personajes[i];
 
             // actualiza la posición del sprite según la cámara
@@ -249,18 +244,17 @@ class MotorGrafico {
     // dibujo de la escena
     /////////////////////////////////////////////////////////////////////////////
 
-    void dibujaSprites()
-    {
+    void dibujaSprites() {
         // si la habitación no está iluminada, evita dibujar los sprites visibles
-        if (!pantallaIluminada){
-            for (int i = 0; i < Juego.numSprites; i++){
-                if (juego.sprites[i].esVisible){
+        if (!pantallaIluminada) {
+            for (int i = 0; i < Juego.numSprites; i++) {
+                if (juego.sprites[i].esVisible) {
                     juego.sprites[i].haCambiado = false;
                 }
             }
 
             // si adso es visible en la pantalla actual y tiene la lámpara, activa el sprite de la luz
-            if ((juego.personajes[1].sprite.esVisible) && ((juego.personajes[1].objetos & LAMPARA) != 0)){
+            if ((juego.personajes[1].sprite.esVisible) && ((juego.personajes[1].objetos & LAMPARA) != 0)) {
                 juego.sprites[Juego.spriteLuz].esVisible = true;
                 juego.sprites[Juego.spriteLuz].haCambiado = true;
 
@@ -273,9 +267,8 @@ class MotorGrafico {
         mezclador.mezclaSprites(juego.sprites, Juego.numSprites);
     }
 
-    void dibujaPantalla()
-    {
-        if (hayQueRedibujar){
+    void dibujaPantalla() {
+        if (hayQueRedibujar) {
             // elige un color de fondo según el tipo de pantalla
             int colorFondo = (pantallaIluminada) ? 0 : 3;
 
@@ -289,7 +282,7 @@ class MotorGrafico {
             genPant.genera(data);
 
             // si es una pantalla iluminada, dibuja el contenido del buffer de tiles
-            if (pantallaIluminada){
+            if (pantallaIluminada) {
                 genPant.dibujaBufferTiles();
             }
 
@@ -312,7 +305,7 @@ class MotorGrafico {
         if (obtenerAlturaBasePlanta(entidad.altura) != alturaBasePantalla) return false;
 
         // transforma las coordenadas locales a coordenadas de cámara
-        int[] posLocal = new int[]{posXLocal, posYLocal};
+        int[] posLocal = new int[] { posXLocal, posYLocal };
         transCoordLocalesACoordCamara(posLocal);
         posXLocal = posLocal[0];
         posYLocal = posLocal[1];
@@ -328,14 +321,14 @@ class MotorGrafico {
 
         if ((posYPant < 8) || (posYPant >= 58)) return false;
 
-        posYPant = 4*(posYPant + 1);
-        posXPant = 2*(posXLocal - posYLocal) + 80 - 40;
+        posYPant = 4 * (posYPant + 1);
+        posXPant = 2 * (posXLocal - posYLocal) + 80 - 40;
         if ((posXPant < 0) || (posXPant >= 80)) return false;
 
         // calcula la profundidad usada para ordenar el dibujado de sprites
         sprPosY = posXLocal + posYLocal - 16;
 
-        if (sprPosY < 0){
+        if (sprPosY < 0) {
             sprPosY = 0;
         }
 
@@ -344,10 +337,9 @@ class MotorGrafico {
     }
 
     // transforma las coordenadas locales según la orientación de la cámara
-    void transCoordLocalesACoordCamara(int[] pos)
-    {
+    void transCoordLocalesACoordCamara(int[] pos) {
         int temp;
-        switch(oriCamara) {
+        switch (oriCamara) {
             case 0:
                 break;
             case 1:
@@ -368,8 +360,7 @@ class MotorGrafico {
     }
 
     // ajusta la orientación que se le pasa según la orientación de la cámara
-    int ajustaOrientacionSegunCamara(int orientacion)
-    {
+    int ajustaOrientacionSegunCamara(int orientacion) {
         return (orientacion - oriCamara) & 0x03;
     }
 
@@ -378,21 +369,19 @@ class MotorGrafico {
     /////////////////////////////////////////////////////////////////////////////
 
     // devuelve la altura base de la planta a la que corresponde la altura que se le pasa
-    int obtenerAlturaBasePlanta(int altura)
-    {
-        if (altura < 0x0d) return 0x00;			// planta baja (0x00-0x0c)
-        if (altura >= 0x18) return 0x16;		// segunda baja (0x18-0xff)
-        return 0x0b;							// primera planta (0x0d-0x17)
+    int obtenerAlturaBasePlanta(int altura) {
+        if (altura < 0x0d) return 0x00;            // planta baja (0x00-0x0c)
+        if (altura >= 0x18) return 0x16;        // segunda baja (0x18-0xff)
+        return 0x0b;                            // primera planta (0x0d-0x17)
     }
 
     // devuelve la planta a la que corresponde la altura base que se le pasa
-    int obtenerPlanta(int alturaBase)
-    {
-        if (alturaBase == 0x00) return 0;		// planta baja
-        if (alturaBase == 0x0b) return 1;		// primera planta
-        if (alturaBase == 0x16) return 2;		// segunda planta
+    int obtenerPlanta(int alturaBase) {
+        if (alturaBase == 0x00) return 0;        // planta baja
+        if (alturaBase == 0x0b) return 1;        // primera planta
+        if (alturaBase == 0x16) return 2;        // segunda planta
 
-        assert(false);
+        assert (false);
 
         return 0;
     }
@@ -402,12 +391,11 @@ class MotorGrafico {
     /////////////////////////////////////////////////////////////////////////////
 
     // dada una pantalla, obtiene la dirección donde empieza
-    int obtenerDirPantalla(int numPant)
-    {
+    int obtenerDirPantalla(int numPant) {
         int desp = SCREEN_DATA_BASE_ADDRESS;
 
         // recorre las pantallas hasta llegar a la que buscamos
-        for (int i = 0; i < numPant; i++){
+        for (int i = 0; i < numPant; i++) {
             desp += juego.gameData(desp);
         }
 

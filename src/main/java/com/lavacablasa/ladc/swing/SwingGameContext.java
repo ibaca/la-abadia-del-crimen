@@ -3,11 +3,19 @@ package com.lavacablasa.ladc.swing;
 import com.lavacablasa.ladc.core.GameContext;
 import com.lavacablasa.ladc.core.GfxOutput;
 import com.lavacablasa.ladc.core.InputPlugin;
-
-import javax.swing.*;
-
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.DisplayMode;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import javax.swing.JFrame;
 
 public class SwingGameContext implements GameContext {
 
@@ -43,19 +51,24 @@ public class SwingGameContext implements GameContext {
     }
 
     private Cursor createEmptyCursor() {
-        Point hotSpot = new Point(0,0);
+        Point hotSpot = new Point(0, 0);
         Image cursorImage = new BufferedImage(1, 1, BufferedImage.TRANSLUCENT);
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         return toolkit.createCustomCursor(cursorImage, hotSpot, "empty");
     }
 
-    @Override
-    public GfxOutput getGfxOutput() {
+    @Override public GfxOutput getGfxOutput() {
         return gfxOutput;
     }
 
-    @Override
-    public InputPlugin getInput() {
-        return inputPlugin;
+    @Override public InputPlugin getInput() { return inputPlugin;
+    }
+
+    @Override public byte[] load(String resource) {
+        try (InputStream input = SwingGameContext.class.getResourceAsStream(resource)) {
+            return input.readAllBytes();
+        } catch (IOException e) {
+            throw new UncheckedIOException("Cannot load resource " + resource, e);
+        }
     }
 }

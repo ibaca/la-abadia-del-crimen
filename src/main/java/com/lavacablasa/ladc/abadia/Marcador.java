@@ -1,5 +1,7 @@
 package com.lavacablasa.ladc.abadia;
 
+import com.lavacablasa.ladc.core.Promise;
+
 class Marcador {
 
     private static final int CHARSET_ADDR = 0xb400;
@@ -155,9 +157,9 @@ class Marcador {
             }
 
             // averigua si hay que comprobar el objeto actual
-            if ((mascara & (1 << (Juego.numObjetos - 1))) != 0) {
+            if ((mascara & 1 << Juego.numObjetos - 1) != 0) {
                 // si tenemos el objeto, lo dibuja
-                if ((objetos & (1 << (Juego.numObjetos - 1))) != 0) {
+                if ((objetos & 1 << Juego.numObjetos - 1) != 0) {
                     Sprite spr = sprites[Juego.primerSpriteObjetos + numHuecos];
 
                     // obtiene un puntero a los gráficos del objeto
@@ -219,7 +221,7 @@ class Marcador {
         caracter &= 0x7f;
 
         // si es un caracter no imprimible, sale
-        if ((caracter != 0x20) && (caracter < 0x2d)) {
+        if (caracter != 0x20 && caracter < 0x2d) {
             return;
         }
 
@@ -237,7 +239,7 @@ class Marcador {
             int valor = juego.gameData(data);
 
             for (int i = 0; i < 8; i++) {
-                juego.cpc6128.setMode1Pixel(x + i, y + j, ((valor & bit) != 0) ? colorTexto : colorFondo);
+                juego.cpc6128.setMode1Pixel(x + i, y + j, (valor & bit) != 0 ? colorTexto : colorFondo);
                 bit = bit >> 1;
             }
             data++;
@@ -245,85 +247,66 @@ class Marcador {
     }
 
     // genera el efecto de la espiral
-    void dibujaEspiral() {
-        dibujaEspiral(3);    // dibuja la espiral
-        dibujaEspiral(0);    // borra la espiral
+    Promise<Void> dibujaEspiral() {
+        return dibujaEspiral(3) // dibuja la espiral
+                .andThen(() -> dibujaEspiral(0)); // borra la espiral
     }
 
     // dibuja una espiral cuadrada del color que se le pasa
-    private void dibujaEspiral(int color) {
-        // fija la posición inicial
-        int posX = 0;
-        int posY = 0;
+    Promise<Void> dibujaEspiral(int color) {
+        var state = new Object() {
+            int i = 0;
 
-        // fija la longitud de las tiras
-        int horizontal = 0x3f;
-        int vertical = 0x4f;
+            // fija la posición inicial
+            int posX = 0;
+            int posY = 0;
 
-        int colorAUsar = 0;
+            // fija la longitud de las tiras
+            int horizontal = 0x3f;
+            int vertical = 0x4f;
 
-        // milisegundos que esperar para ver el efecto
-        int retardo = 4;
+            int colorAUsar = 0;
+
+            // milisegundos que esperar para ver el efecto
+            int retardo = 4;
+        };
 
         // repite 32 veces
-        for (int i = 0; i < 32; i++) {
-            int num = horizontal;
-            if (i != 0) horizontal--;
-
-            // dibuja una tira (de izquierda a derecha) del ancho indicado por derecha
-            for (int j = 0; j < num; j++) {
-                dibujaBloque(posX, posY, colorAUsar);
-                posX++;
-            }
-
-            // espera un poco para que se vea el resultado
-            juego.timer.sleep(retardo);
-
-            num = vertical;
-            vertical--;
-
-            // dibuja una tira (de arriba a abajo) del alto indicado por abajo
-            for (int j = 0; j < num; j++) {
-                dibujaBloque(posX, posY, colorAUsar);
-                posY += 2;
-            }
-
-            // espera un poco para que se vea el resultado
-            juego.timer.sleep(retardo);
-
-            num = horizontal;
-            horizontal--;
-
-            // dibuja una tira (de derecha a izquierda) del ancho indicado por izquierda
-            for (int j = 0; j < num; j++) {
-                dibujaBloque(posX, posY, colorAUsar);
-                posX--;
-            }
-
-            // espera un poco para que se vea el resultado
-            juego.timer.sleep(retardo);
-
-            num = vertical;
-            vertical--;
-
-            // dibuja una tira (de abajo a arriba) del alto indicado por arriba
-            for (int j = 0; j < num; j++) {
-                dibujaBloque(posX, posY, colorAUsar);
-                posY -= 2;
-            }
-
-            // espera un poco para que se vea el resultado
-            juego.timer.sleep(retardo);
-
-            // invierte el color a usar
-            colorAUsar ^= color;
-
-            if ((i != 0) && ((i % 8) == 0)) {
-                retardo--;
-            }
-        }
-
-        dibujaBloque(posX, posY, colorAUsar);
+        return Promise.doWhile(state, s -> s.i < 32, n -> Promise.of(n)
+                .andThen(s -> {
+                    int max = s.horizontal; if (s.i != 0) s.horizontal--;
+                    // dibuja una tira (de izquierda a derecha) del ancho indicado por derecha
+                    for (int j = 0; j < max; j++) { dibujaBloque(s.posX, s.posY, s.colorAUsar); s.posX++;}
+                    return juego.timer.sleep(s.retardo).map(s); // espera un poco para que se vea el resultado
+                })
+                .andThen(s -> {
+                    int max = s.vertical; s.vertical--;
+                    // dibuja una tira (de arriba a abajo) del alto indicado por abajo
+                    for (int j = 0; j < max; j++) { dibujaBloque(s.posX, s.posY, s.colorAUsar); s.posY += 2;}
+                    return juego.timer.sleep(s.retardo).map(s); // espera un poco para que se vea el resultado
+                })
+                .andThen(s -> {
+                    int max = s.horizontal; s.horizontal--;
+                    // dibuja una tira (de derecha a izquierda) del ancho indicado por izquierda
+                    for (int j = 0; j < max; j++) { dibujaBloque(s.posX, s.posY, s.colorAUsar); s.posX--;}
+                    return juego.timer.sleep(s.retardo).map(s); // espera un poco para que se vea el resultado
+                })
+                .andThen(s -> {
+                    int max = s.vertical; s.vertical--;
+                    // dibuja una tira (de abajo a arriba) del alto indicado por arriba
+                    for (int j = 0; j < max; j++) { dibujaBloque(s.posX, s.posY, s.colorAUsar); s.posY -= 2;}
+                    return juego.timer.sleep(s.retardo).map(s); // espera un poco para que se vea el resultado
+                })
+                .andThen(s -> {
+                    s.colorAUsar ^= color; // invierte el color a usar
+                    if (s.i != 0 && s.i % 8 == 0) s.retardo--;
+                    s.i++;
+                    return Promise.of(s);
+                })
+        ).andThen(s -> {
+            dibujaBloque(s.posX, s.posY, s.colorAUsar);
+            return Promise.done();
+        });
     }
 
     // dibuja un bloque de 4x8 del color que se le pasa
@@ -333,5 +316,4 @@ class Marcador {
             juego.cpc6128.setMode1Pixel(32 + posX * 4 + i, posY + 1, color);
         }
     }
-
 }

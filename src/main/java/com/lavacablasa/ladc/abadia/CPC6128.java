@@ -82,9 +82,7 @@ public class CPC6128 {
 
     // sets a pixel in mode 1 (320x200, x pixels = 2 width, y pixels = 2 height, 4 colors)
     public void setMode1Pixel(int x, int y, int color) {
-        assert ((x >= 0) && (x < 320));
-        assert ((y >= 0) && (y < 200));
-        assert ((color >= 0) && (color < 4));
+        assert ((x >= 0) && (x < 320)) && ((y >= 0) && (y < 200)) && ((color >= 0) && (color < 4));
 
         int pos = (80 * y) + (x >>> 2);
         screenBuffer[pos] = (byte) packPixelMode1(screenBuffer[pos] & 0xff, (x & 0x03), color);
@@ -102,8 +100,7 @@ public class CPC6128 {
 
     // gets a pixel in mode 1 (320x200, 4 colors)
     public int getMode1Pixel(int x, int y) {
-        assert ((x >= 0) && (x < 320));
-        assert ((y >= 0) && (y < 200));
+        assert ((x >= 0) && (x < 320)) && ((y >= 0) && (y < 200));
 
         int pos = (80 * y) + (x >>> 2);
         return unpackPixelMode1(screenBuffer[pos], (x & 0x03));
@@ -121,9 +118,7 @@ public class CPC6128 {
 
     // fills a rectangle in mode 1 (320x200, 4 colors)
     public void fillMode1Rect(int x0, int y0, int width, int height, int color) {
-        assert ((x0 >= 0) && (x0 < 320));
-        assert ((y0 >= 0) && (y0 < 200));
-        assert ((color >= 0) && (color < 4));
+        assert ((x0 >= 0) && (x0 < 320)) && ((y0 >= 0) && (y0 < 200)) && ((color >= 0) && (color < 4));
         assert (((x0 + width) <= 320) && ((y0 + height) <= 200));
 
         int x1 = x0 + width;

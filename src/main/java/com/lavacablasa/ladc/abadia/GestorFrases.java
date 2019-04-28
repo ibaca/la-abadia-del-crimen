@@ -83,11 +83,9 @@ class GestorFrases {
     // muestra una frase por el marcador siempre y cuando no hubiera otra puesta
     void muestraFrase(int numFrase) {
         // si ya está reproduciendo una frase, sale
-        if (mostrandoFrase) {
-            return;
-        }
+        if (mostrandoFrase) return;
 
-        // prepara todo para que se muestre la frase
+        // prepara para que se muestre la frase
         dibujaFrase(numFrase);
     }
 
@@ -99,7 +97,7 @@ class GestorFrases {
         // limpia la parte del marcador donde se muestran las frases 
         juego.marcador.limpiaAreaFrases();
 
-        // prepara todo para que se muestre la frase
+        // prepara para que se muestre la frase
         dibujaFrase(numFrase);
     }
 
@@ -130,16 +128,11 @@ class GestorFrases {
         contadorActualizacion++;
 
         // sólo actualiza las frases 1 vez cada 45 llamadas
-        if (contadorActualizacion != 45) {
-            return;
-        } else {
-            contadorActualizacion = 0;
-        }
+        if (contadorActualizacion != 45) return;
+        else contadorActualizacion = 0;
 
         // si no se está mostrando una frase en el marcador, sale
-        if (!reproduciendoFrase) {
-            return;
-        }
+        if (!reproduciendoFrase) return;
 
         // si no se ha terminado la frase actual, muestra otro caracter en el marcador
         if (!fraseTerminada) {
@@ -147,18 +140,10 @@ class GestorFrases {
 
             // cambia los caracteres que no coinciden con el código ASCII
             switch (caracter) {
-                case ',':
-                    caracter = 0x3c;
-                    break;
-                case '.':
-                    caracter = 0x3d;
-                    break;
-                case '¿':
-                    caracter = 0x40;
-                    break;
-                case 'Ñ':
-                    caracter = 0x57;
-                    break;
+                case ',': caracter = 0x3c; break;
+                case '.': caracter = 0x3d; break;
+                case '¿': caracter = 0x40; break;
+                case 'Ñ': caracter = 0x57; break;
             }
 
             frasePos++;

@@ -1,6 +1,6 @@
 package com.lavacablasa.ladc.abadia;
 
-import com.lavacablasa.ladc.core.TimingHandler;
+import com.lavacablasa.ladc.core.Promise;
 
 //    Clase que se encarga de generar los bloques que forman las pantallas, calcular la zona que
 //    tapa el bloque y grabar toda esa información en la capas que forman el buffer de tiles.
@@ -361,32 +361,27 @@ class GeneradorPantallas {
     /////////////////////////////////////////////////////////////////////////////
 
     // dibuja en pantalla el contenido del buffer de tiles desde el centro hacia fuera
-    void dibujaBufferTiles() {
+    Promise<Void> dibujaBufferTiles() {
         // posición inicial en el buffer de tiles
         int[] pos = { 7, 8 };
 
-        // obtiene acceso al temporizador
-        TimingHandler timer = juego.timer;
-
         // fija las variables de recorrido
-        int vertical = 4;
-        int horizontal = 1;
+        var state = new Object() {
+            int vertical = 4;
+            int horizontal = 1;
+        };
 
         // repite mientras no se complete toda la pantalla visible
-        while (vertical < 20) {
+        return Promise.doWhile(state, s -> s.vertical < 20, s -> {
             // dibuja 4 tiras: una hacia abajo, otra a la derecha, otra hacia arriba y la otra a la izquierda
-            dibujaTira(pos, 0, 1, vertical);
-            vertical++;
-            dibujaTira(pos, 1, 0, horizontal);
-            horizontal++;
-            dibujaTira(pos, 0, -1, vertical);
-            vertical++;
-            dibujaTira(pos, -1, 0, horizontal);
-            horizontal++;
+            dibujaTira(pos, 0, 1, state.vertical); state.vertical++;
+            dibujaTira(pos, 1, 0, state.horizontal); state.horizontal++;
+            dibujaTira(pos, 0, -1, state.vertical); state.vertical++;
+            dibujaTira(pos, -1, 0, state.horizontal); state.horizontal++;
 
             // espera un poco para que se vea el resultado
-            timer.sleep(DRAW_DELAY);
-        }
+            return juego.timer.sleep(DRAW_DELAY).map(s);
+        }).map((Void) null);
     }
 
     // dibuja una tira de tiles

@@ -18,9 +18,7 @@ class Controles {
         input.process(inputs);
 
         // combina el estado actual de los controles con el anterior para poder detectar pulsaciones
-        for (int i = 0; i < NUM_INPUTS; i++) {
-            inputsHistory[i] = (inputsHistory[i] << 1) | inputs[i];
-        }
+        for (int i = 0; i < NUM_INPUTS; i++) inputsHistory[i] = (inputsHistory[i] << 1) | inputs[i];
     }
 
     boolean estaSiendoPulsado(Input input) {
@@ -29,9 +27,5 @@ class Controles {
 
     boolean seHaPulsado(Input input) {
         return (inputsHistory[input.ordinal()] & 0b11) == 0b01;
-    }
-
-    boolean seHaSoltado(Input input) {
-        return (inputsHistory[input.ordinal()] & 0b11) == 0b10;
     }
 }

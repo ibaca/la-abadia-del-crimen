@@ -22,6 +22,7 @@ import static com.lavacablasa.ladc.abadia.PosicionesPredefinidas.POS_GUILLERMO;
 import static com.lavacablasa.ladc.abadia.PosicionesPredefinidas.POS_LIBRO;
 
 import com.lavacablasa.ladc.core.Input;
+import com.lavacablasa.ladc.core.Promise;
 import java.util.Random;
 
 class MomentosDia {
@@ -461,26 +462,22 @@ class Logica {
     // acciones programadas
     /////////////////////////////////////////////////////////////////////////////
 
-    void ejecutaAccionesMomentoDia() {
+    Promise<Void> ejecutaAccionesMomentoDia() {
         // obtiene el estado actualizado del gestor de frases
         juego.gestorFrases.actualizaEstado();
 
         // si el personaje que muestra la cámara está en medio de una animación, sale
-        if ((juego.motor.personaje.contadorAnimacion & 0x01) != 0) return;
+        if ((juego.motor.personaje.contadorAnimacion & 0x01) != 0) return Promise.done();
 
-        if (!avanzarMomentoDia) {
-            accionesDia.ejecutaAccionesProgramadas();
-
-            return;
-        }
+        if (!avanzarMomentoDia) return accionesDia.ejecutaAccionesProgramadas();
 
         // si está mostrando una frase, sale
-        if (juego.gestorFrases.mostrandoFrase) return;
+        if (juego.gestorFrases.mostrandoFrase) return Promise.done();
 
         // si ha cambiado el momento del día, ejecuta unas acciones dependiendo del momento del día
         avanzarMomentoDia = false;
         avanzaMomentoDia();
-        accionesDia.ejecutaAccionesProgramadas();
+        return accionesDia.ejecutaAccionesProgramadas();
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -552,37 +549,26 @@ class Logica {
         // si esta etapa del día tiene una duración programada, comprueba si ha terminado
         if (duracionMomentoDia != 0) {
             duracionMomentoDia--;
-
-            if (duracionMomentoDia == 0) {
-                avanzaMomentoDia();
-            }
+            if (duracionMomentoDia == 0) avanzaMomentoDia();
         }
     }
 
     // calcula el porcentaje de misión completada. Si se ha completado el juego, muestra el final
-    int calculaPorcentajeMision() {
+    Promise<Integer> calculaPorcentajeMision() {
         if (!investigacionCompleta) {
             // asigna un porcentaje según el tiempo que haya pasado de misión
             int porc = 7 * (dia - 1) + momentoDia;
 
             // modifica el porcentaje según los bonus obtenidos
-            for (int i = 0; i < 16; i++) {
-                if ((bonus & (1 << i)) != 0) {
-                    porc += 4;
-                }
-            }
+            for (int i = 0; i < 16; i++) if ((bonus & (1 << i)) != 0) porc += 4;
 
             // si no hemos obtenido un porcentaje >= 5%, pone el porcentaje a 0
-            if (porc < 5) {
-                porc = 0;
-            }
+            if (porc < 5) porc = 0;
 
-            return porc;
+            return Promise.of(porc);
         } else {
             // si se ha completado la investigación, muestra el pergamino del final
-            juego.muestraFinal();
-
-            return 0;
+            return juego.muestraFinal().map(n -> 0);
         }
     }
 
@@ -1090,9 +1076,7 @@ class Logica {
             dia = dia + 1;
 
             // si se ha terminado el séptimo día, vuelve al primer día
-            if (dia > 7) {
-                dia = 1;
-            }
+            if (dia > 7) dia = 1;
 
             // dibuja el nuevo día en el marcador
             juego.marcador.dibujaDia(dia);

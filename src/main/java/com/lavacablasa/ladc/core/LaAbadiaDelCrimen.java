@@ -1,5 +1,7 @@
 package com.lavacablasa.ladc.core;
 
+import static com.lavacablasa.ladc.core.Promise.doWhile;
+
 import com.lavacablasa.ladc.abadia.CPC6128;
 import com.lavacablasa.ladc.abadia.DskReader;
 import com.lavacablasa.ladc.abadia.Juego;
@@ -52,7 +54,6 @@ public class LaAbadiaDelCrimen {
 
     // fields
     private final GameContext context;
-    private final Thread asyncThread;
     private final TimingHandler timingHandler;
     private final Juego abadiaGame;
     private final CPC6128 cpc6128;
@@ -64,9 +65,8 @@ public class LaAbadiaDelCrimen {
         byte[] diskData = context.load("/abadia.dsk");
         byte[] memoryData = readDiskImageToMemory(diskData);
 
-        timingHandler = new TimingHandler(new Timer(), INTERRUPTS_PER_VIDEO_UPDATE, INTERRUPTS_PER_LOGIC_UPDATE);
+        timingHandler = new TimingHandler(INTERRUPTS_PER_VIDEO_UPDATE, INTERRUPTS_PER_LOGIC_UPDATE);
         abadiaGame = new Juego(memoryData, cpc6128, context, timingHandler);
-        asyncThread = new Thread(abadiaGame::run);
     }
 
     private byte[] readDiskImageToMemory(byte[] diskImageData) {
@@ -95,19 +95,22 @@ public class LaAbadiaDelCrimen {
         for (int i = 0; i < size; i++) dst[dstPos + size - i - 1] = src[srcPos + i];
     }
 
-    public void run() {
+    public Promise<?> run() {
         // start async game logic
-        asyncThread.start();
+        Promise<?> gameLogic = abadiaGame.run();
 
         // main sync loop
-        while (true) {
-            timingHandler.sleep((int) ((1. / INTERRUPTS_PER_SECOND) * 1000.));
-            timingHandler.interrupt();
-            if (timingHandler.processLogicInterrupt()) abadiaGame.runSync();
-            if (timingHandler.processVideoInterrupt()) {
-                cpc6128.render();
-                context.getGfxOutput().render();
-            }
-        }
+        Promise<?> mainLoop = doWhile(() -> timingHandler.sleep((int) ((1. / INTERRUPTS_PER_SECOND) * 1000.))
+                .andThen(n -> {
+                    timingHandler.interrupt();
+                    if (timingHandler.processLogicInterrupt()) abadiaGame.runSync();
+                    if (timingHandler.processVideoInterrupt()) {
+                        cpc6128.render();
+                        context.getGfxOutput().render();
+                    }
+                    return Promise.of(true);
+                }));
+
+        return Promise.merge(gameLogic, mainLoop);
     }
 }

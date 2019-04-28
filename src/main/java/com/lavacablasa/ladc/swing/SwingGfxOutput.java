@@ -32,7 +32,7 @@ public class SwingGfxOutput implements GfxOutput {
                 Graphics graphics = strategy.getDrawGraphics();
 
                 // Render to graphics
-                graphics.drawImage(buffer, 0, 40, 640, 400, null);
+                graphics.drawImage(buffer, 0, 0, 640, 400, null);
 
                 // Dispose the graphics
                 graphics.dispose();

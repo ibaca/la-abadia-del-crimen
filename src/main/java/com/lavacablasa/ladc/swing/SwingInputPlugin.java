@@ -34,24 +34,18 @@ public class SwingInputPlugin extends KeyAdapter implements InputPlugin {
 
     @Override
     public synchronized void process(int[] inputs) {
-        for (Input input : Input.values()) {
-            inputs[input.ordinal()] = pressedInputs.contains(input) ? 1 : 0;
-        }
+        for (Input input : Input.values()) inputs[input.ordinal()] = pressedInputs.contains(input) ? 1 : 0;
     }
 
     @Override
     public synchronized void keyPressed(KeyEvent e) {
         Input input = INPUTS.get(e.getKeyCode());
-        if (input != null) {
-            pressedInputs.add(input);
-        }
+        if (input != null) pressedInputs.add(input);
     }
 
     @Override
     public synchronized void keyReleased(KeyEvent e) {
         Input input = INPUTS.get(e.getKeyCode());
-        if (input != null) {
-            pressedInputs.remove(input);
-        }
+        if (input != null) pressedInputs.remove(input);
     }
 }

@@ -2,6 +2,8 @@ package com.lavacablasa.ladc.abadia;
 
 import static com.lavacablasa.ladc.abadia.ObjetosJuego.LAMPARA;
 
+import com.lavacablasa.ladc.core.Promise;
+
 class MotorGrafico {
     static final int[][] tablaDespOri = {
             { +1, 0 },
@@ -267,27 +269,24 @@ class MotorGrafico {
         mezclador.mezclaSprites(juego.sprites, Juego.numSprites);
     }
 
-    void dibujaPantalla() {
-        if (hayQueRedibujar) {
-            // elige un color de fondo según el tipo de pantalla
-            int colorFondo = (pantallaIluminada) ? 0 : 3;
+    Promise<Void> dibujaPantalla() {
+        if (!hayQueRedibujar) return Promise.done();
 
-            // prepara el buffer de tiles y limpia la pantalla
-            genPant.limpiaPantalla(colorFondo);
+        // elige un color de fondo según el tipo de pantalla
+        int colorFondo = pantallaIluminada ? 0 : 3;
 
-            // obtiene el desplazamiento de los datos a los bloques que forman la pantalla actual
-            int data = obtenerDirPantalla(numPantalla);
+        // prepara el buffer de tiles y limpia la pantalla
+        genPant.limpiaPantalla(colorFondo);
 
-            // rellena el buffer de tiles interpretando los bloques que forman la pantalla
-            genPant.genera(data);
+        // obtiene el desplazamiento de los datos a los bloques que forman la pantalla actual
+        int data = obtenerDirPantalla(numPantalla);
 
-            // si es una pantalla iluminada, dibuja el contenido del buffer de tiles
-            if (pantallaIluminada) {
-                genPant.dibujaBufferTiles();
-            }
+        // rellena el buffer de tiles interpretando los bloques que forman la pantalla
+        genPant.genera(data);
 
-            hayQueRedibujar = false;
-        }
+        // si es una pantalla iluminada, dibuja el contenido del buffer de tiles
+        return (pantallaIluminada ? genPant.dibujaBufferTiles() : Promise.done())
+                .andThen(() -> hayQueRedibujar = false);
     }
 
     boolean actualizaCoordCamara(EntidadJuego entidad) {

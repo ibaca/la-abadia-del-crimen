@@ -5,9 +5,6 @@ import com.lavacablasa.ladc.core.GfxOutput;
 import com.lavacablasa.ladc.core.InputPlugin;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.DisplayMode;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -18,18 +15,14 @@ import java.io.UncheckedIOException;
 import javax.swing.JFrame;
 
 public class SwingGameContext implements GameContext {
-
-    private final GraphicsDevice device;
-    private final JFrame frame;
-
-    private SwingGfxOutput gfxOutput;
-    private SwingInputPlugin inputPlugin;
+    public final SwingGfxOutput gfxOutput;
+    public final SwingInputPlugin inputPlugin;
 
     public SwingGameContext() {
         inputPlugin = new SwingInputPlugin();
 
-        frame = new JFrame("La Abadía del Crimen");
-        frame.setSize(640, 480);
+        JFrame frame = new JFrame("La Abadía del Crimen");
+        frame.setSize(640, 400);
         frame.setBackground(Color.BLACK);
         frame.setResizable(false);
         frame.setUndecorated(true);
@@ -42,10 +35,10 @@ public class SwingGameContext implements GameContext {
         frame.setVisible(true);
         frame.createBufferStrategy(2);
 
-        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        device = env.getDefaultScreenDevice();
-        device.setFullScreenWindow(frame);
-        device.setDisplayMode(new DisplayMode(640, 480, 32, DisplayMode.REFRESH_RATE_UNKNOWN));
+//        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+//        GraphicsDevice device = env.getDefaultScreenDevice();
+//        device.setFullScreenWindow(frame);
+//        device.setDisplayMode(new DisplayMode(640, 480, 32, DisplayMode.REFRESH_RATE_UNKNOWN));
 
         gfxOutput = new SwingGfxOutput(frame);
     }
@@ -61,7 +54,8 @@ public class SwingGameContext implements GameContext {
         return gfxOutput;
     }
 
-    @Override public InputPlugin getInput() { return inputPlugin;
+    @Override public InputPlugin getInput() {
+        return inputPlugin;
     }
 
     @Override public byte[] load(String resource) {

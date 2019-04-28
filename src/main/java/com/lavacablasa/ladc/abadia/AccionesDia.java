@@ -7,14 +7,18 @@ import static com.lavacablasa.ladc.abadia.Orientacion.ARRIBA;
 import static com.lavacablasa.ladc.abadia.Orientacion.DERECHA;
 import static com.lavacablasa.ladc.abadia.Orientacion.IZQUIERDA;
 
+import com.lavacablasa.ladc.core.Promise;
+import java.util.function.Supplier;
+
 class AccionesDia {
 
     private final Juego juego;
-    private final Runnable[] acciones;
+    private final Supplier<Promise<Void>>[] acciones;
 
     AccionesDia(Juego juego) {
         this.juego = juego;
-        this.acciones = new Runnable[7];
+        //noinspection unchecked
+        this.acciones = new Supplier[7];
 
         this.acciones[MomentosDia.NOCHE] = this::ejecutaAccionesNoche;
         this.acciones[MomentosDia.PRIMA] = this::ejecutaAccionesPrima;
@@ -29,14 +33,16 @@ class AccionesDia {
     // ejecución de las acciones programadas
     /////////////////////////////////////////////////////////////////////////////
 
-    void ejecutaAccionesProgramadas() {
+    Promise<Void> ejecutaAccionesProgramadas() {
         // si no ha cambiado el momento del día, sale
         if (juego.logica.momentoDia != juego.logica.oldMomentoDia) {
             juego.logica.oldMomentoDia = juego.logica.momentoDia;
             juego.logica.cntMovimiento = 0;
 
             // ejecuta unas acciones dependiendo del momento del día
-            acciones[juego.logica.momentoDia].run();
+            return acciones[juego.logica.momentoDia].get();
+        } else {
+            return Promise.done();
         }
     }
 
@@ -44,7 +50,7 @@ class AccionesDia {
     // acciones programadas según el momento del día
     /////////////////////////////////////////////////////////////////////////////
 
-    private void ejecutaAccionesNoche() {
+    private Promise<Void> ejecutaAccionesNoche() {
         if (juego.logica.dia == 5) {
             // pone las gafas en la habitación iluminada del laberinto
             colocaObjeto(juego.objetos[2], 0x1b, 0x23, 0x18);
@@ -59,87 +65,88 @@ class AccionesDia {
             colocaPersonaje(juego.logica.jorge, 0x12, 0x65, 0x18, ARRIBA);
             juego.logica.jorge.estaActivo = true;
         }
+        return Promise.done();
     }
 
-    private void ejecutaAccionesPrima() {
+    private Promise<Void> ejecutaAccionesPrima() {
         // dibuja el efecto de la espiral
-        dibujaEfectoEspiral();
+        return dibujaEfectoEspiral().andThen(() -> {
+            // modifica las puertas que pueden abrirse
+            juego.logica.mascaraPuertas = 0xef;
 
-        // modifica las puertas que pueden abrirse
-        juego.logica.mascaraPuertas = 0xef;
+            // fija la paleta de día
+            juego.paleta.setGamePalette(2);
 
-        // fija la paleta de día
-        juego.paleta.setGamePalette(2);
+            // abre las puertas del ala izquierda de la abadía
+            juego.puertas[5].orientacion = IZQUIERDA;
+            juego.puertas[5].haciaDentro = true;
+            juego.puertas[5].estaFija = true;
+            juego.puertas[5].estaAbierta = true;
+            juego.puertas[6].orientacion = IZQUIERDA;
+            juego.puertas[6].haciaDentro = false;
+            juego.puertas[6].estaFija = true;
+            juego.puertas[6].estaAbierta = true;
 
-        // abre las puertas del ala izquierda de la abadía
-        juego.puertas[5].orientacion = IZQUIERDA;
-        juego.puertas[5].haciaDentro = true;
-        juego.puertas[5].estaFija = true;
-        juego.puertas[5].estaAbierta = true;
-        juego.puertas[6].orientacion = IZQUIERDA;
-        juego.puertas[6].haciaDentro = false;
-        juego.puertas[6].estaFija = true;
-        juego.puertas[6].estaAbierta = true;
+            if (juego.logica.dia >= 3) {
+                // si se ha usado la lámpara, desaparece
+                juego.logica.reiniciaContadoresLampara();
 
-        if (juego.logica.dia >= 3) {
-            // si se ha usado la lámpara, desaparece
-            juego.logica.reiniciaContadoresLampara();
+                // si la lámpara había desaparecido, la pone en la cocina
+                if (juego.logica.lamparaDesaparecida) {
+                    juego.logica.lamparaDesaparecida = false;
 
-            // si la lámpara había desaparecido, la pone en la cocina
-            if (juego.logica.lamparaDesaparecida) {
-                juego.logica.lamparaDesaparecida = false;
-
-                colocaObjeto(juego.objetos[7], 0x5a, 0x2a, 0x04);
+                    colocaObjeto(juego.objetos[7], 0x5a, 0x2a, 0x04);
+                }
             }
-        }
 
-        if (juego.logica.dia == 2) {
-            // desaparecen las gafas
-            juego.logica.guillermo.objetos &= 0xdf;
-            juego.logica.berengario.objetos &= 0xdf;
+            if (juego.logica.dia == 2) {
+                // desaparecen las gafas
+                juego.logica.guillermo.objetos &= 0xdf;
+                juego.logica.berengario.objetos &= 0xdf;
 
-            colocaObjeto(juego.objetos[2], 0, 0, 0);
+                colocaObjeto(juego.objetos[2], 0, 0, 0);
 
-            // dibuja los objetos que tiene guillermo en el marcador
-            juego.marcador.dibujaObjetos(juego.logica.guillermo.objetos, 0xff);
-        }
-
-        if (juego.logica.dia == 3) {
-            // jorge coge el libro y lo esconde
-            juego.logica.jorge.objetos = LIBRO;
-            colocaObjeto(juego.objetos[0], 0x0f, 0x2e, 0x00);
-
-            // escribe un comando para pensar un nuevo movimiento
-            juego.logica.jorge.numBitAcciones = 0;
-            juego.logica.jorge.posAcciones = 0;
-            juego.logica.jorge.bufAcciones[0] = 0x10;
-
-            // coloca a jorge al final del pasillo de las celdas de los monjes
-            colocaPersonaje(juego.logica.jorge, 0xc8, 0x24, 0x00, DERECHA);
-            juego.logica.jorge.estaActivo = true;
-
-            // indica que el abad no tiene ningún objeto
-            juego.logica.abad.objetos = 0;
-
-            // si guillermo no tiene el pergamino, se coloca en la habitación de detrás del espejo
-            if ((juego.logica.guillermo.objetos & PERGAMINO) == 0) {
-                colocaObjeto(juego.objetos[3], 0x18, 0x64, 0x18);
-                juego.logica.pergaminoGuardado = true;
+                // dibuja los objetos que tiene guillermo en el marcador
+                juego.marcador.dibujaObjetos(juego.logica.guillermo.objetos, 0xff);
             }
-        }
 
-        // si es el quinto día y no tenemos la llave 1, ésta desaparece
-        if ((juego.logica.dia == 5) && ((juego.logica.guillermo.objetos & LLAVE1) == 0)) {
-            colocaObjeto(juego.objetos[4], 0, 0, 0);
-        }
+            if (juego.logica.dia == 3) {
+                // jorge coge el libro y lo esconde
+                juego.logica.jorge.objetos = LIBRO;
+                colocaObjeto(juego.objetos[0], 0x0f, 0x2e, 0x00);
+
+                // escribe un comando para pensar un nuevo movimiento
+                juego.logica.jorge.numBitAcciones = 0;
+                juego.logica.jorge.posAcciones = 0;
+                juego.logica.jorge.bufAcciones[0] = 0x10;
+
+                // coloca a jorge al final del pasillo de las celdas de los monjes
+                colocaPersonaje(juego.logica.jorge, 0xc8, 0x24, 0x00, DERECHA);
+                juego.logica.jorge.estaActivo = true;
+
+                // indica que el abad no tiene ningún objeto
+                juego.logica.abad.objetos = 0;
+
+                // si guillermo no tiene el pergamino, se coloca en la habitación de detrás del espejo
+                if ((juego.logica.guillermo.objetos & PERGAMINO) == 0) {
+                    colocaObjeto(juego.objetos[3], 0x18, 0x64, 0x18);
+                    juego.logica.pergaminoGuardado = true;
+                }
+            }
+
+            // si es el quinto día y no tenemos la llave 1, ésta desaparece
+            if ((juego.logica.dia == 5) && ((juego.logica.guillermo.objetos & LLAVE1) == 0)) {
+                colocaObjeto(juego.objetos[4], 0, 0, 0);
+            }
+        });
     }
 
-    private void ejecutaAccionesTercia() {
+    private Promise<Void> ejecutaAccionesTercia() {
         // dibuja el efecto de la espiral
-        dibujaEfectoEspiral();
+        return dibujaEfectoEspiral();
     }
 
-    private void ejecutaAccionesSexta() {
+    private Promise<Void> ejecutaAccionesSexta() {
         if (juego.logica.dia == 4) {
             // bernardo gui aparece en las escaleras de la abadía
             juego.logica.bernardo.estaEnLaAbadia = true;
@@ -148,31 +155,33 @@ class AccionesDia {
             // indica que bernardo puede coger el pergamino
             juego.logica.bernardo.mascaraObjetos = PERGAMINO;
         }
+        return Promise.done();
     }
 
-    private void ejecutaAccionesNona() {
+    private Promise<Void> ejecutaAccionesNona() {
         // dibuja el efecto de la espiral
-        dibujaEfectoEspiral();
-
-        // si es el tercer día, jorge pasa a estar inactivo y desaparece
-        if (juego.logica.dia == 3) {
-            juego.logica.jorge.estaActivo = false;
-            juego.logica.jorge.posX = juego.logica.jorge.posY = juego.logica.jorge.altura = 0;
-        }
+        return dibujaEfectoEspiral().andThen(() -> {
+            // si es el tercer día, jorge pasa a estar inactivo y desaparece
+            if (juego.logica.dia == 3) {
+                juego.logica.jorge.estaActivo = false;
+                juego.logica.jorge.posX = juego.logica.jorge.posY = juego.logica.jorge.altura = 0;
+            }
+        });
     }
 
-    private void ejecutaAccionesVisperas() {
+    private Promise<Void> ejecutaAccionesVisperas() {
+        return Promise.done();
     }
 
-    private void ejecutaAccionesCompletas() {
+    private Promise<Void> ejecutaAccionesCompletas() {
         // dibuja el efecto de la espiral
-        dibujaEfectoEspiral();
+        return dibujaEfectoEspiral().andThen(() -> {
+            // fija la paleta de noche
+            juego.paleta.setGamePalette(3);
 
-        // fija la paleta de noche
-        juego.paleta.setGamePalette(3);
-
-        // modifica las puertas que pueden abrirse
-        juego.logica.mascaraPuertas = 0xdf;
+            // modifica las puertas que pueden abrirse
+            juego.logica.mascaraPuertas = 0xdf;
+        });
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -180,11 +189,11 @@ class AccionesDia {
     /////////////////////////////////////////////////////////////////////////////
 
     // genera el efecto de la espiral
-    private void dibujaEfectoEspiral() {
-        juego.marcador.dibujaEspiral();
-
-        // indica un cambio de pantalla
-        juego.motor.posXPantalla = juego.motor.posYPantalla = -1;
+    private Promise<Void> dibujaEfectoEspiral() {
+        return juego.marcador.dibujaEspiral().andThen(() -> {
+            // indica un cambio de pantalla
+            juego.motor.posXPantalla = juego.motor.posYPantalla = -1;
+        });
     }
 
     /////////////////////////////////////////////////////////////////////////////

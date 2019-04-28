@@ -1,12 +1,16 @@
 package com.lavacablasa.ladc.abadia;
 
 import static com.lavacablasa.ladc.abadia.MomentosDia.VISPERAS;
+import static com.lavacablasa.ladc.core.Input.BUTTON;
+import static com.lavacablasa.ladc.core.Input.SPACE;
 
 import com.lavacablasa.ladc.core.GameContext;
 import com.lavacablasa.ladc.core.Input;
+import com.lavacablasa.ladc.core.Promise;
 import com.lavacablasa.ladc.core.TimingHandler;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public class Juego {
 
@@ -70,120 +74,116 @@ public class Juego {
     // método principal del juego
     /////////////////////////////////////////////////////////////////////////////
 
-    public void run() {
-        // muestra la imagen de presentación
-        muestraPresentacion();
+    public Promise<?> run() {
+        return muestraPresentacion()
+                .andThen(this::muestraIntroduccion)
+                .andThen(this::creaEntidadesJuego)
+                .andThen(this::generaGraficosFlipeados)
+                .andThen(() -> {
+                    marcador.limpiaAreaMarcador();
+                    logica.despHabitacionEspejo();
+                })
+                // aquí ya se ha completado la inicialización de datos para el juego
+                // ahora realiza la inicialización para poder empezar a jugar una partida
+                .andThen(() -> Promise.doWhile(() -> {
+                    // inicia la lógica del juego
+                    logica.inicia();
 
-        // muestra el pergamino de presentación
-        muestraIntroduccion();
+                    // limpia el área de juego y dibuja el marcador
+                    limpiaAreaJuego(0);
+                    marcador.dibujaMarcador();
 
-        // crea las entidades del juego (sprites, personajes, puertas y objetos)
-        creaEntidadesJuego();
+                    // inicia el contador de la interrupción
+                    contadorInterrupcion = 0;
 
-        // genera los gráficos flipeados en x de las entidades que lo necesiten
-        generaGraficosFlipeados();
+                    // pone una posición de pantalla inválida para que se redibuje la pantalla
+                    motor.posXPantalla = motor.posYPantalla = -1;
 
-        // limpia el área que ocupa el marcador
-        marcador.limpiaAreaMarcador();
+                    // dibuja los objetos que tiene guillermo en el marcador
+                    marcador.dibujaObjetos(personajes[0].objetos, 0xff);
 
-        // obtiene las direcciones de los datos relativos a la habitación del espejo
-        logica.despHabitacionEspejo();
+                    // inicia el marcador (día y momento del día, obsequium y el espacio de las frases)
+                    muestraDiaYMomentoDia();
+                    marcador.dibujaObsequium(logica.obsequium);
+                    marcador.limpiaAreaFrases();
 
-        // aquí ya se ha completado la inicialización de datos para el juego
-        // ahora realiza la inicialización para poder empezar a jugar una partida
-        while (true) {
-            // inicia la lógica del juego
-            logica.inicia();
+                    // el bucle principal del juego empieza aquí
+                    return Promise.doWhile(() -> {
+                        // actualiza el estado de los controles
+                        controles.actualizaEstado();
 
-            // limpia el área de juego y dibuja el marcador
-            limpiaAreaJuego(0);
-            marcador.dibujaMarcador();
+                        // obtiene el contador de la animación de guillermo para saber si se generan caminos en esta iteración
+                        logica.buscRutas.contadorAnimGuillermo = logica.guillermo.contadorAnimacion;
 
-            // inicia el contador de la interrupción
-            contadorInterrupcion = 0;
+                        // comprueba si se debe abrir el espejo
+                        logica.compruebaAbreEspejo();
 
-            // pone una posición de pantalla inválida para que se redibuje la pantalla
-            motor.posXPantalla = motor.posYPantalla = -1;
+                        // comprueba si se ha pulsado la pausa
+                        return compruebaPausa()
+                                .andThen(() -> {
+                                    // actualiza las variables relacionadas con el paso del tiempo
+                                    logica.actualizaVariablesDeTiempo();
 
-            // dibuja los objetos que tiene guillermo en el marcador
-            marcador.dibujaObjetos(personajes[0].objetos, 0xff);
+                                    // si guillermo ha muerto, empieza una partida
+                                    return muestraPantallaFinInvestigacion();
+                                })
+                                .andThen(guillermoMuerto -> {
+                                    if (guillermoMuerto) return Promise.of(Boolean.FALSE);
+                                    else return Promise.done()
+                                            .andThen(() -> {
+                                                // comprueba si guillermo lee el libro, y si lo hace sin guantes, lo mata
+                                                logica.compruebaLecturaLibro();
 
-            // inicia el marcador (día y momento del día, obsequium y el espacio de las frases)
-            muestraDiaYMomentoDia();
-            marcador.dibujaObsequium(logica.obsequium);
-            marcador.limpiaAreaFrases();
+                                                // comprueba si hay que avanzar la parte del momento del día en el marcador
+                                                marcador.realizaScrollMomentoDia();
 
-            while (true) {    // el bucle principal del juego empieza aquí
-                // actualiza el estado de los controles
-                controles.actualizaEstado();
+                                                // comprueba si hay que ejecutar las acciones programadas según el momento del día
+                                                return logica.ejecutaAccionesMomentoDia();
+                                            })
+                                            .andThen(() -> {
+                                                // comprueba si hay opciones de que la cámara siga a otro personaje y calcula los bonus obtenidos
+                                                logica.compruebaBonusYCambiosDeCamara();
 
-                // obtiene el contador de la animación de guillermo para saber si se generan caminos en esta iteración
-                logica.buscRutas.contadorAnimGuillermo = logica.guillermo.contadorAnimacion;
+                                                // comprueba si se ha cambiado de pantalla y actúa en consecuencia
+                                                motor.compruebaCambioPantalla();
 
-                // comprueba si se debe abrir el espejo
-                logica.compruebaAbreEspejo();
+                                                // comprueba si los personajes cogen o dejan algún objeto
+                                                logica.compruebaCogerDejarObjetos();
 
-                // comprueba si se ha pulsado la pausa
-                compruebaPausa();
+                                                // comprueba si se abre o se cierra alguna puerta
+                                                logica.compruebaAbrirCerrarPuertas();
 
-                // actualiza las variables relacionadas con el paso del tiempo
-                logica.actualizaVariablesDeTiempo();
+                                                // ejecuta la lógica de los personajes
+                                                for (int i = 0; i < numPersonajes; i++) personajes[i].run();
 
-                // si guillermo ha muerto, empieza una partida
-                if (muestraPantallaFinInvestigacion()) {
-                    break;
-                }
+                                                // indica que en esta iteración no se ha generado ningún camino
+                                                logica.buscRutas.generadoCamino = false;
 
-                // comprueba si guillermo lee el libro, y si lo hace sin guantes, lo mata
-                logica.compruebaLecturaLibro();
+                                                // actualiza el sprite de la luz para que se mueva siguiendo a adso
+                                                actualizaLuz();
 
-                // comprueba si hay que avanzar la parte del momento del día en el marcador
-                marcador.realizaScrollMomentoDia();
+                                                // si guillermo o adso están frente al espejo, muestra su reflejo
+                                                logica.realizaReflejoEspejo();
 
-                // comprueba si hay que ejecutar las acciones programadas según el momento del día
-                logica.ejecutaAccionesMomentoDia();
+                                                // dibuja la pantalla si fuera necesario
+                                                return motor.dibujaPantalla();
+                                            })
+                                            .andThen(() -> {
+                                                // dibuja los sprites visibles que hayan cambiado
+                                                motor.dibujaSprites();
 
-                // comprueba si hay opciones de que la cámara siga a otro personaje y calcula los bonus obtenidos
-                logica.compruebaBonusYCambiosDeCamara();
-
-                // comprueba si se ha cambiado de pantalla y actúa en consecuencia
-                motor.compruebaCambioPantalla();
-
-                // comprueba si los personajes cogen o dejan algún objeto
-                logica.compruebaCogerDejarObjetos();
-
-                // comprueba si se abre o se cierra alguna puerta
-                logica.compruebaAbrirCerrarPuertas();
-
-                // ejecuta la lógica de los personajes
-                for (int i = 0; i < numPersonajes; i++) {
-                    personajes[i].run();
-                }
-
-                // indica que en esta iteración no se ha generado ningún camino
-                logica.buscRutas.generadoCamino = false;
-
-                // actualiza el sprite de la luz para que se mueva siguiendo a adso
-                actualizaLuz();
-
-                // si guillermo o adso están frente al espejo, muestra su reflejo
-                logica.realizaReflejoEspejo();
-
-                // dibuja la pantalla si fuera necesario
-                motor.dibujaPantalla();
-
-                // dibuja los sprites visibles que hayan cambiado
-                motor.dibujaSprites();
-
-                // espera un poco para actualizar el estado del juego
-                while (contadorInterrupcion < 0x24) {
-                    timer.sleep(5);
-                }
-
-                // reinicia el contador de la interrupción
-                contadorInterrupcion = 0;
-            }
-        }
+                                                // espera un poco para actualizar el estado del juego
+                                                return Promise.doWhile(() -> {
+                                                    if (contadorInterrupcion < 0x24) return timer.sleep(5).map(true);
+                                                    else return Promise.of(false);
+                                                }).andThen(() -> {
+                                                    // reinicia el contador de la interrupción
+                                                    contadorInterrupcion = 0;
+                                                }).map(true);
+                                            });
+                                });
+                    }).map(true);
+                }));
     }
 
     public void runSync() {
@@ -298,19 +298,13 @@ public class Juego {
     }
 
     // comprueba si se debe pausar el juego
-    private void compruebaPausa() {
-
+    private Promise<?> compruebaPausa() {
+        if (!controles.seHaPulsado(Input.SUPR)) return Promise.done();
         // si se ha pulsado suprimir, se para hasta que se vuelva a pulsar
-        if (controles.seHaPulsado(Input.SUPR)) {
-            pausa = true;
-            while (pausa) {
-                timer.sleep(10);
-                controles.actualizaEstado();
-                if (controles.seHaPulsado(Input.SUPR)) {
-                    pausa = false;
-                }
-            }
-        }
+        return Promise.doWhile(() -> timer.sleep(10).map(n -> {
+            controles.actualizaEstado();
+            return !controles.seHaPulsado(Input.SUPR);
+        }));
     }
 
     /////////////////////////////////////////////////////////////////////////////
@@ -318,88 +312,61 @@ public class Juego {
     /////////////////////////////////////////////////////////////////////////////
 
     // muestra la imagen de presentación del juego
-    private void muestraPresentacion() {
-
+    private Promise muestraPresentacion() {
         cpc6128.setMode(0);
-
-        // fija la paleta de la presentación
-        paleta.setIntroPalette();
-
-        // muestra la pantalla de la presentación
-        cpc6128.showMode0Screen(introData);
-
-        // espera 5 segundos
-        timer.sleep(5000);
+        paleta.setIntroPalette();// fija la paleta de la presentación
+        cpc6128.showMode0Screen(introData);// muestra la pantalla de la presentación
+        return timer.sleep(5000);// espera 5 segundos
     }
 
     // muestra el pergamino de presentación
-    private void muestraIntroduccion() {
-
+    private Promise<?> muestraIntroduccion() {
         cpc6128.setMode(1);
-
-        // muestra la introducción
-        pergamino.muestraTexto(PergaminoTextos.PERGAMINO_INICIO);
-
-        // coloca la paleta negra
-        paleta.setGamePalette(0);
-
-        // espera a que se suelte el botón
-        boolean espera = true;
-        while (espera) {
-            timer.sleep(1);
-            controles.actualizaEstado();
-            espera = controles.estaSiendoPulsado(Input.BUTTON);
-        }
+        return pergamino.muestraTexto(PergaminoTextos.PERGAMINO_INICIO)// muestra la introducción
+                .andThen(() -> paleta.setGamePalette(0))// coloca la paleta negra
+                .andThen(() -> Promise.doWhile(() -> timer.sleep(1).andThen(() -> {// espera a que se suelte el botón
+                    controles.actualizaEstado();
+                    return Promise.of(controles.estaSiendoPulsado(BUTTON));
+                })));
     }
 
     // muestra indefinidamente el pergamino del final
-    void muestraFinal() {
-
-        while (true) {
-            // muestra el texto del final
-            pergamino.muestraTexto(PergaminoTextos.PERGAMINO_FINAL);
-        }
+    Promise<?> muestraFinal() {
+        return Promise.doWhile(() -> pergamino.muestraTexto(PergaminoTextos.PERGAMINO_FINAL).map(true));
     }
 
     // muestra la parte de misión completada. Si se ha completado el juego, muestra el final
-    private boolean muestraPantallaFinInvestigacion() {
+    private Promise<Boolean> muestraPantallaFinInvestigacion() {
         // si guillermo está vivo, sale
-        if (!logica.haFracasado) return false;
+        if (!logica.haFracasado) return Promise.of(false);
 
         // indica que la cámara siga a guillermo y lo haga ya
         logica.numPersonajeCamara = 0x80;
 
         // si está mostrando una frase por el marcador, espera a que se termine de mostrar
-        if (gestorFrases.mostrandoFrase) return false;
+        if (gestorFrases.mostrandoFrase) return Promise.of(false);
 
         // oculta el área de juego
         limpiaAreaJuego(3);
 
         // calcula el porcentaje de misión completada. Si se ha completado el juego, muestra el final
-        int porc = logica.calculaPorcentajeMision();
+        return logica.calculaPorcentajeMision().andThen(porc -> {
+            String porcentaje = String.format("  %02d POR CIENTO", porc);
+            marcador.imprimeFrase("HAS RESUELTO EL", 96, 32, 2, 3);
+            marcador.imprimeFrase(porcentaje, 88, 48, 2, 3);
+            marcador.imprimeFrase("DE LA INVESTIGACION", 80, 64, 2, 3);
+            marcador.imprimeFrase("PULSA ESPACIO PARA EMPEZAR", 56, 128, 2, 3);
 
-        String porcentaje = String.format("  %02d POR CIENTO", porc);
-        marcador.imprimeFrase("HAS RESUELTO EL", 96, 32, 2, 3);
-        marcador.imprimeFrase(porcentaje, 88, 48, 2, 3);
-        marcador.imprimeFrase("DE LA INVESTIGACION", 80, 64, 2, 3);
-        marcador.imprimeFrase("PULSA ESPACIO PARA EMPEZAR", 56, 128, 2, 3);
-
-        // espera a que se pulse y se suelte el botón
-        boolean espera = true;
-        while (espera) {
-            controles.actualizaEstado();
-            timer.sleep(1);
-            espera = !(controles.estaSiendoPulsado(Input.BUTTON) || controles.estaSiendoPulsado(Input.SPACE));
-        }
-
-        espera = true;
-        while (espera) {
-            controles.actualizaEstado();
-            timer.sleep(1);
-            espera = controles.estaSiendoPulsado(Input.BUTTON) || controles.estaSiendoPulsado(Input.SPACE);
-        }
-
-        return true;
+            // espera a que se pulse y se suelte el botón
+            Supplier<Boolean> pulsado = () -> controles.estaSiendoPulsado(BUTTON) || controles.estaSiendoPulsado(SPACE);
+            return Promise.doWhile(() -> {
+                controles.actualizaEstado();
+                return timer.sleep(1).map(n -> !pulsado.get());
+            }).andThen(() -> Promise.doWhile(() -> {
+                controles.actualizaEstado();
+                return timer.sleep(1).map(n -> pulsado.get());
+            })).map(n -> true);
+        });
     }
 
     /////////////////////////////////////////////////////////////////////////////

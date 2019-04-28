@@ -1,10 +1,10 @@
 package com.lavacablasa.ladc.core;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 public class TimingHandler {
-
-    /** timer used to track elapsed time */
-    private final Timer timer;
-
     /** number of interrupts per video update */
     private final int intsPerFrame;
     /** number of interrupts per logic update */
@@ -13,11 +13,13 @@ public class TimingHandler {
     /** number of interrupts elapsed since the game started */
     private int ints;
 
-    public TimingHandler(Timer timer,  int intsPerFrame, int intsPerLogic) {
-        this.timer = timer;
+    private final ScheduledExecutorService eventLoop;
+
+    public TimingHandler(int intsPerFrame, int intsPerLogic) {
         this.intsPerFrame = intsPerFrame;
         this.intsPerLogic = intsPerLogic;
         this.ints = 0;
+        this.eventLoop = Executors.newSingleThreadScheduledExecutor();
     }
 
     public void interrupt() { ints++;}
@@ -25,5 +27,9 @@ public class TimingHandler {
     public boolean processVideoInterrupt() { return ints % intsPerFrame == 0;}
 
     // sleeps for some time taking in account the actual frame-skip
-    public void sleep(int milliSeconds) { timer.sleep(milliSeconds);}
+    public Promise<Void> sleep(int milliSeconds) {
+        Promise<Void> out = new Promise<>();
+        eventLoop.schedule(() -> out.resolve(null), milliSeconds, TimeUnit.MILLISECONDS);
+        return out;
+    }
 }

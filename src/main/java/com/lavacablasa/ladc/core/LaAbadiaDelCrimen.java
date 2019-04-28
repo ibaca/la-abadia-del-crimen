@@ -1,7 +1,5 @@
 package com.lavacablasa.ladc.core;
 
-import static com.lavacablasa.ladc.core.Promise.doWhile;
-
 import com.lavacablasa.ladc.abadia.CPC6128;
 import com.lavacablasa.ladc.abadia.DskReader;
 import com.lavacablasa.ladc.abadia.Juego;
@@ -48,25 +46,18 @@ import com.lavacablasa.ladc.abadia.Juego;
 //
 /////////////////////////////////////////////////////////////////////////////
 public class LaAbadiaDelCrimen {
-    private static final int INTERRUPTS_PER_SECOND = 300;
     private static final int INTERRUPTS_PER_VIDEO_UPDATE = 2;
     private static final int INTERRUPTS_PER_LOGIC_UPDATE = 1;
 
-    // fields
-    private final GameContext context;
-    private final TimingHandler timingHandler;
     private final Juego abadiaGame;
-    private final CPC6128 cpc6128;
 
     public LaAbadiaDelCrimen(GameContext context) {
-        this.context = context;
-        this.cpc6128 = new CPC6128(context);
 
         byte[] diskData = context.load("/abadia.dsk");
         byte[] memoryData = readDiskImageToMemory(diskData);
 
-        timingHandler = new TimingHandler(INTERRUPTS_PER_VIDEO_UPDATE, INTERRUPTS_PER_LOGIC_UPDATE);
-        abadiaGame = new Juego(memoryData, cpc6128, context, timingHandler);
+        TimingHandler timingHandler = new TimingHandler(INTERRUPTS_PER_VIDEO_UPDATE, INTERRUPTS_PER_LOGIC_UPDATE);
+        abadiaGame = new Juego(memoryData, new CPC6128(context), context, timingHandler);
     }
 
     private byte[] readDiskImageToMemory(byte[] diskImageData) {
@@ -96,21 +87,6 @@ public class LaAbadiaDelCrimen {
     }
 
     public Promise<?> run() {
-        // start async game logic
-        Promise<?> gameLogic = abadiaGame.run();
-
-        // main sync loop
-        Promise<?> mainLoop = doWhile(() -> timingHandler.sleep((int) ((1. / INTERRUPTS_PER_SECOND) * 1000.))
-                .andThen(n -> {
-                    timingHandler.interrupt();
-                    if (timingHandler.processLogicInterrupt()) abadiaGame.runSync();
-                    if (timingHandler.processVideoInterrupt()) {
-                        cpc6128.render();
-                        context.render();
-                    }
-                    return Promise.of(true);
-                }));
-
-        return Promise.merge(gameLogic, mainLoop);
+        return Promise.merge(abadiaGame.gameLogicLoop(), abadiaGame.mainSyncLoop());
     }
 }

@@ -3,6 +3,7 @@ package com.lavacablasa.ladc.abadia;
 import static com.lavacablasa.ladc.abadia.MomentosDia.VISPERAS;
 import static com.lavacablasa.ladc.core.Input.BUTTON;
 import static com.lavacablasa.ladc.core.Input.SPACE;
+import static com.lavacablasa.ladc.core.Promise.doWhile;
 
 import com.lavacablasa.ladc.core.GameContext;
 import com.lavacablasa.ladc.core.Input;
@@ -13,7 +14,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 public class Juego {
-
+    private static final int INTERRUPTS_PER_SECOND = 300;
     static final int numPersonajes = 8;
     static final int numPuertas = 7;
     static final int numObjetos = 8;
@@ -74,7 +75,7 @@ public class Juego {
     // método principal del juego
     /////////////////////////////////////////////////////////////////////////////
 
-    public Promise<?> run() {
+    public Promise<?> gameLogicLoop() {
         return muestraPresentacion()
                 .andThen(this::muestraIntroduccion)
                 .andThen(this::creaEntidadesJuego)
@@ -184,6 +185,20 @@ public class Juego {
                                 });
                     }).map(true);
                 }));
+    }
+
+    public Promise<?> mainSyncLoop() {
+        return doWhile(() -> timer.sleep((int) ((1. / INTERRUPTS_PER_SECOND) * 1000.)).andThen(n -> {
+            timer.interrupt();
+            if (timer.processLogicInterrupt()) {
+                runSync();
+            }
+            if (timer.processVideoInterrupt()) {
+                cpc6128.render();
+                context.render();
+            }
+            return Promise.of(true);
+        }));
     }
 
     public void runSync() {

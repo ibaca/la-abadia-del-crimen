@@ -64,7 +64,7 @@ public class Juego {
         this.motor = new MotorGrafico(this, buffer);
         this.marcador = new Marcador(this);
         this.logica = new Logica(this, buffer);
-        this.controles = new Controles(context.getInput());
+        this.controles = new Controles(context);
 
         this.contadorInterrupcion = 0;
         this.pausa = false;

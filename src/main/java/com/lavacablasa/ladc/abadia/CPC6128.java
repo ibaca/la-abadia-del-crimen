@@ -1,6 +1,6 @@
 package com.lavacablasa.ladc.abadia;
 
-import com.lavacablasa.ladc.core.GfxOutput;
+import com.lavacablasa.ladc.core.GameContext;
 
 /**
  * Clase de ayuda para realizar operaciones gráficas de amstrad.
@@ -60,11 +60,11 @@ public class CPC6128 {
             { 0x080, 0x080, 0x0ff }     // 31 pastel blue
     };
 
-    private final GfxOutput gfx;
+    private final GameContext gfx;
     private final byte[] screenBuffer = new byte[16000];
     private int mode = 0;
 
-    public CPC6128(GfxOutput gfx) {
+    public CPC6128(GameContext gfx) {
         this.gfx = gfx;
     }
 

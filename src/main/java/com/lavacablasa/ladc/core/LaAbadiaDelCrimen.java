@@ -60,7 +60,7 @@ public class LaAbadiaDelCrimen {
 
     public LaAbadiaDelCrimen(GameContext context) {
         this.context = context;
-        this.cpc6128 = new CPC6128(context.getGfxOutput());
+        this.cpc6128 = new CPC6128(context);
 
         byte[] diskData = context.load("/abadia.dsk");
         byte[] memoryData = readDiskImageToMemory(diskData);
@@ -106,7 +106,7 @@ public class LaAbadiaDelCrimen {
                     if (timingHandler.processLogicInterrupt()) abadiaGame.runSync();
                     if (timingHandler.processVideoInterrupt()) {
                         cpc6128.render();
-                        context.getGfxOutput().render();
+                        context.render();
                     }
                     return Promise.of(true);
                 }));

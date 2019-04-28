@@ -106,19 +106,19 @@ class Pergamino {
                     case 0x0d: // salto de línea
                         state.posX = 76;
                         state.posY += 16;
-                        return juego.timer.sleep(600).andThen(() -> {
+                        return juego.context.sleep(600).andThen(() -> {
                             if (state.posY <= 164) return Promise.of(c);
                             // si hay que pasar página del pergamino
                             state.posX = 76; state.posY = 16;
-                            return juego.timer.sleep(2000).andThen(this::pasaPagina).map(c);
+                            return juego.context.sleep(2000).andThen(this::pasaPagina).map(c);
                         });
                     case 0x20: // espacio
                         state.posX += 10;
-                        return juego.timer.sleep(30).map(c);
+                        return juego.context.sleep(30).map(c);
                     case 0x0a: // salto de página
                         state.posX = 76;
                         state.posY = 16;
-                        return juego.timer.sleep(3 * 525).andThen(this::pasaPagina).map(c);
+                        return juego.context.sleep(3 * 525).andThen(this::pasaPagina).map(c);
                     default: // carácter imprimible
                         // elige un color dependiendo de si es mayúsculas o minúsculas
                         int color = (((c) & 0x60) == 0x40) ? 3 : 2;
@@ -134,7 +134,7 @@ class Pergamino {
                             // dibuja el trazo del carácter
                             juego.cpc6128.setMode1Pixel(newPosX, newPosy, color);
                             // espera un poco para que se pueda apreciar como se traza el carácter
-                            return juego.timer.sleep(8).map(co + 1);
+                            return juego.context.sleep(8).map(co + 1);
                         }).andThen(co -> {
                             // avanza la state.posición hasta el siguiente carácter
                             state.posX += juego.gameData(co) & 0x0f;
@@ -238,7 +238,7 @@ class Pergamino {
             return Promise.doWhile(state, s -> s.num < 45, s -> {
                 state.num++;
                 dibujaTriangulo(s.x, s.y, s.dim);
-                return juego.timer.sleep(20).andThen(() -> {
+                return juego.context.sleep(20).andThen(() -> {
                     restauraParteSuperiorYDerecha(s.x, s.y, s.dim);
                     s.x = s.x - 4;
                     s.dim++;
@@ -255,7 +255,7 @@ class Pergamino {
             return Promise.doWhile(state, s -> s.num < 46, s -> {
                 state.num++;
                 dibujaTriangulo(s.x, s.y, s.dim);
-                return juego.timer.sleep(20).andThen(() -> {
+                return juego.context.sleep(20).andThen(() -> {
                     s.y = s.y - 4;
 
                     // apunta a los datos borrados del borde izquierdo del pergamino

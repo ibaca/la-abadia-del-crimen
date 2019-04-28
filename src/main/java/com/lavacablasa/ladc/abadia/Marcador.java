@@ -277,25 +277,25 @@ class Marcador {
                     int max = s.horizontal; if (s.i != 0) s.horizontal--;
                     // dibuja una tira (de izquierda a derecha) del ancho indicado por derecha
                     for (int j = 0; j < max; j++) { dibujaBloque(s.posX, s.posY, s.colorAUsar); s.posX++;}
-                    return juego.timer.sleep(s.retardo).map(s); // espera un poco para que se vea el resultado
+                    return juego.context.sleep(s.retardo).map(s); // espera un poco para que se vea el resultado
                 })
                 .andThen(s -> {
                     int max = s.vertical; s.vertical--;
                     // dibuja una tira (de arriba a abajo) del alto indicado por abajo
                     for (int j = 0; j < max; j++) { dibujaBloque(s.posX, s.posY, s.colorAUsar); s.posY += 2;}
-                    return juego.timer.sleep(s.retardo).map(s); // espera un poco para que se vea el resultado
+                    return juego.context.sleep(s.retardo).map(s); // espera un poco para que se vea el resultado
                 })
                 .andThen(s -> {
                     int max = s.horizontal; s.horizontal--;
                     // dibuja una tira (de derecha a izquierda) del ancho indicado por izquierda
                     for (int j = 0; j < max; j++) { dibujaBloque(s.posX, s.posY, s.colorAUsar); s.posX--;}
-                    return juego.timer.sleep(s.retardo).map(s); // espera un poco para que se vea el resultado
+                    return juego.context.sleep(s.retardo).map(s); // espera un poco para que se vea el resultado
                 })
                 .andThen(s -> {
                     int max = s.vertical; s.vertical--;
                     // dibuja una tira (de abajo a arriba) del alto indicado por arriba
                     for (int j = 0; j < max; j++) { dibujaBloque(s.posX, s.posY, s.colorAUsar); s.posY -= 2;}
-                    return juego.timer.sleep(s.retardo).map(s); // espera un poco para que se vea el resultado
+                    return juego.context.sleep(s.retardo).map(s); // espera un poco para que se vea el resultado
                 })
                 .andThen(s -> {
                     s.colorAUsar ^= color; // invierte el color a usar

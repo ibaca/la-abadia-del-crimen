@@ -9,5 +9,9 @@ public interface GameContext {
     void process(int[] inputs);
     // Resources
     byte[] load(String resource);
-
+    // Timer
+    void interrupt();
+    boolean processLogicInterrupt();
+    boolean processVideoInterrupt();
+    Promise<Void> sleep(int milliSeconds);
 }

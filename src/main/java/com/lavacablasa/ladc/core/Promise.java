@@ -2,6 +2,8 @@ package com.lavacablasa.ladc.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -40,6 +42,12 @@ public class Promise<T> {
                 else out.resolve(n);
             }
         });
+        return out;
+    }
+
+    public static Promise<Void> sleep(ScheduledExecutorService eventLoop, int milliSeconds) {
+        Promise<Void> out = new Promise<>();
+        eventLoop.schedule(() -> out.resolve(null), milliSeconds, TimeUnit.MILLISECONDS);
         return out;
     }
 

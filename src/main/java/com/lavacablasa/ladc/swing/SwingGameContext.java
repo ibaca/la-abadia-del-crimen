@@ -2,6 +2,7 @@ package com.lavacablasa.ladc.swing;
 
 import com.lavacablasa.ladc.core.GameContext;
 import com.lavacablasa.ladc.core.Input;
+import com.lavacablasa.ladc.core.Promise;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
@@ -18,16 +19,27 @@ import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import javax.swing.JFrame;
 
 public class SwingGameContext implements GameContext {
+    /** number of interrupts per video update */
+    private static final int INTERRUPTS_PER_VIDEO_UPDATE = 2;
+    /** number of interrupts per logic update */
+    private static final int INTERRUPTS_PER_LOGIC_UPDATE = 1;
+
     private final JFrame frame;
-    private final BufferedImage buffer;
-    private final int[] colors;
+    private final BufferedImage buffer = new BufferedImage(320, 200, BufferedImage.TYPE_INT_ARGB);
+    private final int[] colors = new int[32];
     private final Set<Input> pressedInputs = Collections.synchronizedSet(EnumSet.noneOf(Input.class));
+    private final ScheduledExecutorService eventLoop = Executors.newSingleThreadScheduledExecutor();
+
+    /** number of interrupts elapsed since the game started */
+    private int ints = 0;
 
     public SwingGameContext() {
-        JFrame frame = new JFrame("La Abadía del Crimen");
+        frame = new JFrame("La Abadía del Crimen");
         frame.setSize(640, 400);
         frame.setBackground(Color.BLACK);
         frame.setResizable(false);
@@ -50,10 +62,6 @@ public class SwingGameContext implements GameContext {
         });
         frame.setVisible(true);
         frame.createBufferStrategy(2);
-
-        this.frame = frame;
-        this.colors = new int[32];
-        this.buffer = new BufferedImage(320, 200, BufferedImage.TYPE_INT_ARGB);
     }
 
     private Cursor createEmptyCursor() {
@@ -126,4 +134,9 @@ public class SwingGameContext implements GameContext {
         }
         return null;
     }
+
+    @Override public void interrupt() { ints++;}
+    @Override public boolean processLogicInterrupt() { return ints % INTERRUPTS_PER_LOGIC_UPDATE == 0;}
+    @Override public boolean processVideoInterrupt() { return ints % INTERRUPTS_PER_VIDEO_UPDATE == 0;}
+    @Override public Promise<Void> sleep(int milliSeconds) { return Promise.sleep(eventLoop, milliSeconds);}
 }

@@ -380,7 +380,7 @@ class GeneradorPantallas {
             dibujaTira(pos, -1, 0, state.horizontal); state.horizontal++;
 
             // espera un poco para que se vea el resultado
-            return juego.timer.sleep(DRAW_DELAY).map(s);
+            return juego.context.sleep(DRAW_DELAY).map(s);
         }).map((Void) null);
     }
 

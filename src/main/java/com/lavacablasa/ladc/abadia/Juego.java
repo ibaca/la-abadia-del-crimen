@@ -8,7 +8,6 @@ import static com.lavacablasa.ladc.core.Promise.doWhile;
 import com.lavacablasa.ladc.core.GameContext;
 import com.lavacablasa.ladc.core.Input;
 import com.lavacablasa.ladc.core.Promise;
-import com.lavacablasa.ladc.core.TimingHandler;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -28,7 +27,6 @@ public class Juego {
     final byte[] introData;
     private final byte[] gameData;
     final GameContext context;
-    final TimingHandler timer;
     final CPC6128 cpc6128;
 
     final Controles controles;
@@ -49,12 +47,11 @@ public class Juego {
     public Marcador marcador;
     public Logica logica;
 
-    public Juego(byte[] memoryData, CPC6128 cpc6128, GameContext context, TimingHandler timer) {
+    public Juego(byte[] memoryData, CPC6128 cpc6128, GameContext context) {
         Objects.requireNonNull(memoryData);
         this.introData = Arrays.copyOfRange(memoryData, 0, 0x4000);
         this.gameData = Arrays.copyOfRange(memoryData, 0x4000, memoryData.length);
 
-        this.timer = Objects.requireNonNull(timer);
         this.cpc6128 = Objects.requireNonNull(cpc6128);
         this.context = Objects.requireNonNull(context);
 
@@ -175,7 +172,7 @@ public class Juego {
 
                                                 // espera un poco para actualizar el estado del juego
                                                 return Promise.doWhile(() -> {
-                                                    if (contadorInterrupcion < 0x24) return timer.sleep(5).map(true);
+                                                    if (contadorInterrupcion < 0x24) return context.sleep(5).map(true);
                                                     else return Promise.of(false);
                                                 }).andThen(() -> {
                                                     // reinicia el contador de la interrupción
@@ -188,12 +185,12 @@ public class Juego {
     }
 
     public Promise<?> mainSyncLoop() {
-        return doWhile(() -> timer.sleep((int) ((1. / INTERRUPTS_PER_SECOND) * 1000.)).andThen(n -> {
-            timer.interrupt();
-            if (timer.processLogicInterrupt()) {
+        return doWhile(() -> context.sleep((int) ((1. / INTERRUPTS_PER_SECOND) * 1000.)).andThen(n -> {
+            context.interrupt();
+            if (context.processLogicInterrupt()) {
                 runSync();
             }
-            if (timer.processVideoInterrupt()) {
+            if (context.processVideoInterrupt()) {
                 cpc6128.render();
                 context.render();
             }
@@ -316,7 +313,7 @@ public class Juego {
     private Promise<?> compruebaPausa() {
         if (!controles.seHaPulsado(Input.SUPR)) return Promise.done();
         // si se ha pulsado suprimir, se para hasta que se vuelva a pulsar
-        return Promise.doWhile(() -> timer.sleep(10).map(n -> {
+        return Promise.doWhile(() -> context.sleep(10).map(n -> {
             controles.actualizaEstado();
             return !controles.seHaPulsado(Input.SUPR);
         }));
@@ -331,7 +328,7 @@ public class Juego {
         cpc6128.setMode(0);
         paleta.setIntroPalette();// fija la paleta de la presentación
         cpc6128.showMode0Screen(introData);// muestra la pantalla de la presentación
-        return timer.sleep(5000);// espera 5 segundos
+        return context.sleep(5000);// espera 5 segundos
     }
 
     // muestra el pergamino de presentación
@@ -339,7 +336,7 @@ public class Juego {
         cpc6128.setMode(1);
         return pergamino.muestraTexto(PergaminoTextos.PERGAMINO_INICIO)// muestra la introducción
                 .andThen(() -> paleta.setGamePalette(0))// coloca la paleta negra
-                .andThen(() -> Promise.doWhile(() -> timer.sleep(1).andThen(() -> {// espera a que se suelte el botón
+                .andThen(() -> Promise.doWhile(() -> context.sleep(1).andThen(() -> {// espera a que se suelte el botón
                     controles.actualizaEstado();
                     return Promise.of(controles.estaSiendoPulsado(BUTTON));
                 })));
@@ -376,10 +373,10 @@ public class Juego {
             Supplier<Boolean> pulsado = () -> controles.estaSiendoPulsado(BUTTON) || controles.estaSiendoPulsado(SPACE);
             return Promise.doWhile(() -> {
                 controles.actualizaEstado();
-                return timer.sleep(1).map(n -> !pulsado.get());
+                return context.sleep(1).map(n -> !pulsado.get());
             }).andThen(() -> Promise.doWhile(() -> {
                 controles.actualizaEstado();
-                return timer.sleep(1).map(n -> pulsado.get());
+                return context.sleep(1).map(n -> pulsado.get());
             })).map(n -> true);
         });
     }

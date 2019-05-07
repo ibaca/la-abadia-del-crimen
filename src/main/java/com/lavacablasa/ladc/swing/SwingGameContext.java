@@ -1,5 +1,8 @@
 package com.lavacablasa.ladc.swing;
 
+import com.lavacablasa.ladc.abadia.CPC6128;
+import com.lavacablasa.ladc.abadia.DskReader;
+import com.lavacablasa.ladc.abadia.Juego;
 import com.lavacablasa.ladc.core.GameContext;
 import com.lavacablasa.ladc.core.Input;
 import com.lavacablasa.ladc.core.Promise;
@@ -29,6 +32,40 @@ public class SwingGameContext implements GameContext {
     /** number of interrupts per logic update */
     private static final int INTERRUPTS_PER_LOGIC_UPDATE = 1;
 
+    public static void main(String[] args) {
+        var context = new SwingGameContext();
+        byte[] diskData = context.load("/abadia.dsk");
+        Juego game = new Juego(readDiskImageToMemory(diskData), new CPC6128(context), context);
+        game.gameLogicLoop();
+        game.mainSyncLoop();
+    }
+
+    private static byte[] readDiskImageToMemory(byte[] diskImageData) {
+        byte[] auxBuffer = new byte[0xff00];
+        byte[] memoryData = new byte[0x24000];
+        DskReader dsk = new DskReader(diskImageData);
+
+        for (int i = 0; i <= 16; i++) dsk.getTrackData(i + 0x01, auxBuffer, i * 0x0f00, 0x0f00);
+        reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x00000, 0x4000);    // abadia0.bin
+        reOrderAndCopy(auxBuffer, 0x4000, memoryData, 0x0c000, 0x4000);    // abadia3.bin
+        reOrderAndCopy(auxBuffer, 0x8000, memoryData, 0x20000, 0x4000);    // abadia8.bin
+        reOrderAndCopy(auxBuffer, 0xc000, memoryData, 0x04100, 0x3f00);    // abadia1.bin
+        for (int i = 0; i <= 4; i++) dsk.getTrackData(i + 0x12, auxBuffer, i * 0x0f00, 0x0f00);
+        reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x1c000, 0x4000);    // abadia7.bin
+        for (int i = 0; i <= 4; i++) dsk.getTrackData(i + 0x17, auxBuffer, i * 0x0f00, 0x0f00);
+        reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x18000, 0x4000);    // abadia6.bin
+        for (int i = 0; i <= 5; i++) dsk.getTrackData(i + 0x1c, auxBuffer, i * 0x0f00, 0x0f00);
+        reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x14000, 0x4000);    // abadia5.bin
+        for (int i = 0; i <= 4; i++) dsk.getTrackData(i + 0x21, auxBuffer, i * 0x0f00, 0x0f00);
+        reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x08000, 0x4000);    // abadia2.bin
+
+        return memoryData;
+    }
+
+    private static void reOrderAndCopy(byte[] src, int srcPos, byte[] dst, int dstPos, int size) {
+        for (int i = 0; i < size; i++) dst[dstPos + size - i - 1] = src[srcPos + i];
+    }
+
     private final JFrame frame;
     private final BufferedImage buffer = new BufferedImage(320, 200, BufferedImage.TYPE_INT_ARGB);
     private final int[] colors = new int[32];
@@ -48,7 +85,6 @@ public class SwingGameContext implements GameContext {
         frame.setIgnoreRepaint(true);
         frame.setLocationRelativeTo(null);
         frame.setCursor(createEmptyCursor());
-
         frame.addKeyListener(new KeyAdapter() {
             @Override public synchronized void keyPressed(KeyEvent e) {
                 Input input = asInput(e.getKeyCode());
@@ -58,6 +94,23 @@ public class SwingGameContext implements GameContext {
             @Override public synchronized void keyReleased(KeyEvent e) {
                 Input input = asInput(e.getKeyCode());
                 if (input != null) pressedInputs.remove(input);
+            }
+
+            private Input asInput(int key) {
+                switch (key) {
+                    case KeyEvent.VK_DELETE: return Input.SUPR;
+                    case KeyEvent.VK_ENTER: return Input.INTRO;
+                    case KeyEvent.VK_SPACE: return Input.SPACE;
+                    case KeyEvent.VK_UP: return Input.UP;
+                    case KeyEvent.VK_DOWN: return Input.DOWN;
+                    case KeyEvent.VK_LEFT: return Input.LEFT;
+                    case KeyEvent.VK_RIGHT: return Input.RIGHT;
+                    case KeyEvent.VK_S: return Input.S;
+                    case KeyEvent.VK_N: return Input.N;
+                    case KeyEvent.VK_Q: return Input.Q;
+                    case KeyEvent.VK_R: return Input.R;
+                }
+                return null;
             }
         });
         frame.setVisible(true);
@@ -116,23 +169,6 @@ public class SwingGameContext implements GameContext {
 
     @Override public void process(int[] inputs) {
         for (Input input : Input.values()) inputs[input.ordinal()] = pressedInputs.contains(input) ? 1 : 0;
-    }
-
-    static Input asInput(int key) {
-        switch (key) {
-            case KeyEvent.VK_DELETE: return Input.SUPR;
-            case KeyEvent.VK_ENTER: return Input.INTRO;
-            case KeyEvent.VK_SPACE: return Input.SPACE;
-            case KeyEvent.VK_UP: return Input.UP;
-            case KeyEvent.VK_DOWN: return Input.DOWN;
-            case KeyEvent.VK_LEFT: return Input.LEFT;
-            case KeyEvent.VK_RIGHT: return Input.RIGHT;
-            case KeyEvent.VK_S: return Input.S;
-            case KeyEvent.VK_N: return Input.N;
-            case KeyEvent.VK_Q: return Input.Q;
-            case KeyEvent.VK_R: return Input.R;
-        }
-        return null;
     }
 
     @Override public void interrupt() { ints++;}

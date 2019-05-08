@@ -10,7 +10,7 @@ import com.lavacablasa.ladc.core.Promise;
 /////////////////////////////////////////////////////////////////////////////
 class GeneradorPantallas {
 
-    static final int NIVELES_PROF_TILES = 2;
+    static final int NIVELES_PROF_TILES = 6;
 
     // tabla con los manejadores para cada comando
     private static final int TILES_BASE = 0x8300;

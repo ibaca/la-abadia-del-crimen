@@ -167,6 +167,7 @@ public class CPC6128 {
             case 0: renderMode0(); break;
             case 1: renderMode1(); break;
         }
+        gfx.render();
     }
 
     private void renderMode0() {

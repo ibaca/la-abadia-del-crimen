@@ -3,12 +3,132 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <groupId>com.lavacablasa.ladc</groupId>
     <artifactId>ladc</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>gwt-app</packaging>
+
+    <url>https://github.com/ibaca/la-abadia-del-crimen</url>
+
     <properties>
         <project.build.sourceEncoding>UTF8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
+        <gwt.version>HEAD-SNAPSHOT</gwt.version>
+        <github.global.server>github</github.global.server>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.google.gwt</groupId>
+                <artifactId>gwt</artifactId>
+                <version>${gwt.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-user</artifactId>
+            <version>${gwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gwt</groupId>
+            <artifactId>gwt-dev</artifactId>
+            <version>${gwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.gwt.elemento</groupId>
+            <artifactId>elemento-core</artifactId>
+            <version>0.9.0-gwt2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava-gwt</artifactId>
+            <version>27.1-jre</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>net.ltgt.gwt.maven</groupId>
+                <artifactId>gwt-maven-plugin</artifactId>
+                <version>1.0-rc-10</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <moduleName>com.lavacablasa.ladc.Ladc</moduleName>
+                    <skipModule>true</skipModule>
+                    <extra>${project.build.directory}/gwt/extra</extra>
+                    <compilerArgs>
+                        <arg>-gen</arg><arg>${project.build.directory}/gwt/gen</arg>
+                        <arg>-saveSource</arg>
+                    </compilerArgs>
+                    <devmodeArgs>
+                        <arg>-bindAddress</arg><arg>0.0.0.0</arg>
+                        <arg>-style</arg><arg>PRETTY</arg>
+                    </devmodeArgs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-sourcemap-sourcecode</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/${project.build.finalName}/ladc/src</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/gwt/extra/ladc/symbolMaps</directory>
+                                    <includes>
+                                        <include>*.json</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>${project.build.directory}/gwt/extra/ladc/src</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.github.github</groupId>
+                <artifactId>site-maven-plugin</artifactId>
+                <version>0.11</version><!-- downgrade to 0.11 to avoid blob upload rate limit! -->
+                <configuration>
+                    <message>Creating site for ${project.version}</message>
+                    <outputDirectory>${project.build.directory}/${project.build.finalName}/ladc</outputDirectory>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>sonatype-snapshots-repo</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>google-snapshots-repo</id>
+            <url>https://oss.sonatype.org/content/repositories/google-snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>

@@ -2,8 +2,7 @@ package com.lavacablasa.ladc.core;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -45,9 +44,9 @@ public class Promise<T> {
         return out;
     }
 
-    public static Promise<Void> sleep(ScheduledExecutorService eventLoop, int milliSeconds) {
+    public static Promise<Void> sleep(BiConsumer<Runnable, Integer> eventLoop, int milliSeconds) {
         Promise<Void> out = new Promise<>();
-        eventLoop.schedule(() -> out.resolve(null), milliSeconds, TimeUnit.MILLISECONDS);
+        eventLoop.accept(() -> out.resolve(null), milliSeconds);
         return out;
     }
 
@@ -68,28 +67,28 @@ public class Promise<T> {
     }
 
     public <V> Promise<V> map(V fn) {
-        var out = new Promise<V>();
+        Promise<V> out = new Promise<>();
         subscribe(t -> out.resolve(fn));
         return out;
     }
     public <V> Promise<V> map(Function<T, V> fn) {
-        var out = new Promise<V>();
+        Promise<V> out = new Promise<>();
         subscribe(t -> out.resolve(fn.apply(t)));
         return out;
     }
 
     public Promise<T> andThen(Runnable fn) {
-        var out = new Promise<T>(); //@formatter:off
+        Promise<T> out = new Promise<>(); //@formatter:off
         subscribe(t -> { fn.run(); out.resolve(t); });
         return out; //@formatter:on
     }
     public <V> Promise<V> andThen(Supplier<Promise<V>> fn) {
-        var out = new Promise<V>();
+        Promise<V> out = new Promise<>();
         subscribe(t -> fn.get().subscribe(out::resolve));
         return out;
     }
     public <V> Promise<V> andThen(Function<T, Promise<V>> fn) {
-        var out = new Promise<V>();
+        Promise<V> out = new Promise<>();
         subscribe(t -> fn.apply(t).subscribe(out::resolve));
         return out;
     }

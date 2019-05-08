@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 public class Juego {
-    private static final int INTERRUPTS_PER_SECOND = 300;
     static final int numPersonajes = 8;
     static final int numPuertas = 7;
     static final int numObjetos = 8;
@@ -185,17 +184,20 @@ public class Juego {
     }
 
     public Promise<?> mainSyncLoop() {
-        return doWhile(() -> context.sleep((int) ((1. / INTERRUPTS_PER_SECOND) * 1000.)).andThen(n -> {
-            context.interrupt();
-            if (context.processLogicInterrupt()) {
-                runSync();
-            }
-            if (context.processVideoInterrupt()) {
-                cpc6128.render();
-                context.render();
-            }
-            return Promise.of(true);
-        }));
+        int fps = 166, interruptTimeout = (int) ((1. / fps) * 1000.);
+        var state = new Object() {
+            /** number of interrupts elapsed since the game started */
+            int interruptions = 0;
+        };
+        return doWhile(() -> {
+            var start = System.currentTimeMillis();
+            state.interruptions++;
+            if (state.interruptions % 1 == 0) runSync();
+            if (state.interruptions % 3 == 0) cpc6128.render();
+            int duration = (int) (System.currentTimeMillis() - start);
+            if (duration > interruptTimeout) return Promise.of(true);
+            else return context.sleep(interruptTimeout - duration).map(true);
+        });
     }
 
     public void runSync() {
@@ -363,7 +365,7 @@ public class Juego {
 
         // calcula el porcentaje de misión completada. Si se ha completado el juego, muestra el final
         return logica.calculaPorcentajeMision().andThen(porc -> {
-            String porcentaje = String.format("  %02d POR CIENTO", porc);
+            String porcentaje = "  " + (porc < 10 ? "0" + porc : porc) + " POR CIENTO";
             marcador.imprimeFrase("HAS RESUELTO EL", 96, 32, 2, 3);
             marcador.imprimeFrase(porcentaje, 88, 48, 2, 3);
             marcador.imprimeFrase("DE LA INVESTIGACION", 80, 64, 2, 3);

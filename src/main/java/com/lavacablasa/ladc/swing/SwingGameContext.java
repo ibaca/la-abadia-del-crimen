@@ -1,11 +1,9 @@
 package com.lavacablasa.ladc.swing;
 
 import com.lavacablasa.ladc.abadia.CPC6128;
-import com.lavacablasa.ladc.abadia.DskReader;
 import com.lavacablasa.ladc.abadia.Juego;
 import com.lavacablasa.ladc.core.GameContext;
 import com.lavacablasa.ladc.core.Input;
-import com.lavacablasa.ladc.core.Promise;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Graphics;
@@ -16,54 +14,23 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import javax.swing.JFrame;
 
-public class SwingGameContext implements GameContext {
-    /** number of interrupts per video update */
-    private static final int INTERRUPTS_PER_VIDEO_UPDATE = 2;
-    /** number of interrupts per logic update */
-    private static final int INTERRUPTS_PER_LOGIC_UPDATE = 1;
+public class SwingGameContext extends GameContext {
 
-    public static void main(String[] args) {
-        var context = new SwingGameContext();
-        byte[] diskData = context.load("/abadia.dsk");
+    public static void main(String[] args) throws Exception {
+        SwingGameContext context = new SwingGameContext();
+        byte[] diskData = SwingGameContext.class.getResourceAsStream("/abadia.dsk").readAllBytes();
         Juego game = new Juego(readDiskImageToMemory(diskData), new CPC6128(context), context);
         game.gameLogicLoop();
         game.mainSyncLoop();
-    }
-
-    private static byte[] readDiskImageToMemory(byte[] diskImageData) {
-        byte[] auxBuffer = new byte[0xff00];
-        byte[] memoryData = new byte[0x24000];
-        DskReader dsk = new DskReader(diskImageData);
-
-        for (int i = 0; i <= 16; i++) dsk.getTrackData(i + 0x01, auxBuffer, i * 0x0f00, 0x0f00);
-        reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x00000, 0x4000);    // abadia0.bin
-        reOrderAndCopy(auxBuffer, 0x4000, memoryData, 0x0c000, 0x4000);    // abadia3.bin
-        reOrderAndCopy(auxBuffer, 0x8000, memoryData, 0x20000, 0x4000);    // abadia8.bin
-        reOrderAndCopy(auxBuffer, 0xc000, memoryData, 0x04100, 0x3f00);    // abadia1.bin
-        for (int i = 0; i <= 4; i++) dsk.getTrackData(i + 0x12, auxBuffer, i * 0x0f00, 0x0f00);
-        reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x1c000, 0x4000);    // abadia7.bin
-        for (int i = 0; i <= 4; i++) dsk.getTrackData(i + 0x17, auxBuffer, i * 0x0f00, 0x0f00);
-        reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x18000, 0x4000);    // abadia6.bin
-        for (int i = 0; i <= 5; i++) dsk.getTrackData(i + 0x1c, auxBuffer, i * 0x0f00, 0x0f00);
-        reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x14000, 0x4000);    // abadia5.bin
-        for (int i = 0; i <= 4; i++) dsk.getTrackData(i + 0x21, auxBuffer, i * 0x0f00, 0x0f00);
-        reOrderAndCopy(auxBuffer, 0x0000, memoryData, 0x08000, 0x4000);    // abadia2.bin
-
-        return memoryData;
-    }
-
-    private static void reOrderAndCopy(byte[] src, int srcPos, byte[] dst, int dstPos, int size) {
-        for (int i = 0; i < size; i++) dst[dstPos + size - i - 1] = src[srcPos + i];
     }
 
     private final JFrame frame;
@@ -71,9 +38,6 @@ public class SwingGameContext implements GameContext {
     private final int[] colors = new int[32];
     private final Set<Input> pressedInputs = Collections.synchronizedSet(EnumSet.noneOf(Input.class));
     private final ScheduledExecutorService eventLoop = Executors.newSingleThreadScheduledExecutor();
-
-    /** number of interrupts elapsed since the game started */
-    private int ints = 0;
 
     public SwingGameContext() {
         frame = new JFrame("La Abadía del Crimen");
@@ -123,15 +87,6 @@ public class SwingGameContext implements GameContext {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         return toolkit.createCustomCursor(cursorImage, hotSpot, "empty");
     }
-
-    @Override public byte[] load(String resource) {
-        try (InputStream input = SwingGameContext.class.getResourceAsStream(resource)) {
-            return input.readAllBytes();
-        } catch (IOException e) {
-            throw new UncheckedIOException("Cannot load resource " + resource, e);
-        }
-    }
-
     @Override public void render() {
         BufferStrategy strategy = frame.getBufferStrategy();
 
@@ -161,7 +116,9 @@ public class SwingGameContext implements GameContext {
         } while (strategy.contentsLost());
     }
 
-    @Override public void setPixel(int x, int y, int color) { buffer.setRGB(x, y, colors[color]);}
+    @Override public void setPixel(int x, int y, int color) {
+        buffer.setRGB(x, y, colors[color]);
+    }
 
     @Override public void setColor(int color, byte r, byte g, byte b) {
         this.colors[color] = 0xff000000 | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
@@ -171,8 +128,7 @@ public class SwingGameContext implements GameContext {
         for (Input input : Input.values()) inputs[input.ordinal()] = pressedInputs.contains(input) ? 1 : 0;
     }
 
-    @Override public void interrupt() { ints++;}
-    @Override public boolean processLogicInterrupt() { return ints % INTERRUPTS_PER_LOGIC_UPDATE == 0;}
-    @Override public boolean processVideoInterrupt() { return ints % INTERRUPTS_PER_VIDEO_UPDATE == 0;}
-    @Override public Promise<Void> sleep(int milliSeconds) { return Promise.sleep(eventLoop, milliSeconds);}
+    @Override protected BiConsumer<Runnable, Integer> getEventLoop() {
+        return (fn, ms) -> eventLoop.schedule(fn, ms, TimeUnit.MILLISECONDS);
+    }
 }

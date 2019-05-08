@@ -15,7 +15,7 @@ public class DskReader {
         this.data = Objects.requireNonNull(dskData);
 
         // check if it's a valid extended dsk file
-        String name = new String(Arrays.copyOfRange(data, 0x00, 0x15), StandardCharsets.US_ASCII);
+        String name = new String(Arrays.copyOfRange(data, 0x00, 0x15), StandardCharsets.ISO_8859_1);
         if (!"EXTENDED CPC DSK File".equals(name)) {
             throw new IllegalArgumentException("Invalid disk data " + name);
         }

@@ -58,11 +58,11 @@ public class GwtGameContext extends GameContext implements EntryPoint {
             case ArrowDown: return Input.DOWN;
             case ArrowLeft: return Input.LEFT;
             case ArrowRight: return Input.RIGHT;
-            // case Key.VK_S: return Input.S;
-            // case Key.VK_N: return Input.N;
-            // case Key.VK_Q: return Input.Q;
-            // case Key.VK_R: return Input.R;
         }
+        if ("s".equalsIgnoreCase(ev.key)) return Input.S;
+        if ("n".equalsIgnoreCase(ev.key)) return Input.N;
+        if ("q".equalsIgnoreCase(ev.key)) return Input.Q;
+        if ("r".equalsIgnoreCase(ev.key)) return Input.R;
         return null;
     }
 

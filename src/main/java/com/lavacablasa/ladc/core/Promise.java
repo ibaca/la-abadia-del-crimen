@@ -44,9 +44,9 @@ public class Promise<T> {
         return out;
     }
 
-    public static Promise<Void> sleep(BiConsumer<Runnable, Integer> eventLoop, int milliSeconds) {
+    public static Promise<Void> sleep(BiConsumer<Runnable, Integer> scheduler, int milliSeconds) {
         Promise<Void> out = new Promise<>();
-        eventLoop.accept(() -> out.resolve(null), milliSeconds);
+        scheduler.accept(() -> out.resolve(null), milliSeconds);
         return out;
     }
 

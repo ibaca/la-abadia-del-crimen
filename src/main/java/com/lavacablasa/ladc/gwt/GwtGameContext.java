@@ -94,7 +94,7 @@ public class GwtGameContext extends GameContext implements EntryPoint {
         for (Input input : Input.values()) inputs[input.ordinal()] = pressedInputs.contains(input) ? 1 : 0;
     }
 
-    @Override protected BiConsumer<Runnable, Integer> getEventLoop() {
+    @Override protected BiConsumer<Runnable, Integer> getTimer() {
         return (fn, ms) -> DomGlobal.setTimeout(p0 -> fn.run(), ms);
     }
 }

@@ -11,8 +11,8 @@ public abstract class GameContext {
     // Input
     public abstract void process(int[] inputs);
     // Timer
-    protected abstract BiConsumer<Runnable, Integer> getEventLoop();
-    public Promise<Void> sleep(int milliSeconds) { return Promise.sleep(getEventLoop(), milliSeconds);}
+    protected abstract BiConsumer<Runnable, Integer> getTimer();
+    public Promise<Void> sleep(int milliSeconds) { return Promise.sleep(getTimer(), milliSeconds);}
     // Disk utils
     protected static byte[] readDiskImageToMemory(byte[] diskImageData) {
         byte[] auxBuffer = new byte[0xff00];

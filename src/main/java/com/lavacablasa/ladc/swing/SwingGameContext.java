@@ -128,7 +128,7 @@ public class SwingGameContext extends GameContext {
         for (Input input : Input.values()) inputs[input.ordinal()] = pressedInputs.contains(input) ? 1 : 0;
     }
 
-    @Override protected BiConsumer<Runnable, Integer> getEventLoop() {
+    @Override protected BiConsumer<Runnable, Integer> getTimer() {
         return (fn, ms) -> eventLoop.schedule(fn, ms, TimeUnit.MILLISECONDS);
     }
 }

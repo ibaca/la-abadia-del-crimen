@@ -15,7 +15,7 @@
         <project.build.sourceEncoding>UTF8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <gwt.version>HEAD-SNAPSHOT</gwt.version>
+        <gwt.version>2.5.1</gwt.version>
         <github.global.server>github</github.global.server>
     </properties>
 

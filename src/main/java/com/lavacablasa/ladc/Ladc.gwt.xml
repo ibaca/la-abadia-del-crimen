@@ -3,7 +3,7 @@
     <inherits name="com.google.gwt.core.Core"/>
     <inherits name="com.google.gwt.event.Event"/>
     <inherits name="com.google.common.io.Io"/>
-    <inherits name="org.jboss.gwt.elemento.Core"/>
+    <inherits name="org.jboss.elemento.Core"/>
     <entry-point class="com.lavacablasa.ladc.gwt.GwtGameContext"/>
     <set-property name="compiler.useSourceMaps" value="true"/>
     <set-configuration-property name="includeSourceMapUrl" value="src/__HASH___sourceMap__FRAGMENT__.json"/>

@@ -15,7 +15,7 @@
         <project.build.sourceEncoding>UTF8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <gwt.version>HEAD-SNAPSHOT</gwt.version>
+        <gwt.version>2.10.0</gwt.version>
         <github.global.server>github</github.global.server>
     </properties>
 
@@ -43,14 +43,14 @@
             <version>${gwt.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jboss.gwt.elemento</groupId>
+            <groupId>org.jboss.elemento</groupId>
             <artifactId>elemento-core</artifactId>
-            <version>0.9.0-gwt2</version>
+            <version>1.0.10-gwtcom</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava-gwt</artifactId>
-            <version>27.1-jre</version>
+            <version>31.1-jre</version>
         </dependency>
     </dependencies>
 
@@ -65,19 +65,24 @@
                     <moduleName>com.lavacablasa.ladc.Ladc</moduleName>
                     <skipModule>true</skipModule>
                     <extra>${project.build.directory}/gwt/extra</extra>
+                    <sourceLevel>11</sourceLevel>
                     <compilerArgs>
-                        <arg>-gen</arg><arg>${project.build.directory}/gwt/gen</arg>
+                        <arg>-gen</arg>
+                        <arg>${project.build.directory}/gwt/gen</arg>
                         <arg>-saveSource</arg>
                     </compilerArgs>
                     <devmodeArgs>
-                        <arg>-bindAddress</arg><arg>0.0.0.0</arg>
-                        <arg>-style</arg><arg>PRETTY</arg>
+                        <arg>-bindAddress</arg>
+                        <arg>0.0.0.0</arg>
+                        <arg>-style</arg>
+                        <arg>PRETTY</arg>
                     </devmodeArgs>
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>copy-sourcemap-sourcecode</id>
@@ -111,24 +116,6 @@
                     <outputDirectory>${project.build.directory}/${project.build.finalName}/ladc</outputDirectory>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
-
-    <repositories>
-        <repository>
-            <id>sonatype-snapshots-repo</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>google-snapshots-repo</id>
-            <url>https://oss.sonatype.org/content/repositories/google-snapshots</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 </project>

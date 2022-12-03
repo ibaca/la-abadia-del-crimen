@@ -1,6 +1,7 @@
 package com.lavacablasa.ladc.gwt;
 
 import static elemental2.dom.DomGlobal.document;
+import static java.util.Objects.requireNonNull;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.lavacablasa.ladc.abadia.CPC6128;
@@ -17,15 +18,14 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import jsinterop.base.Js;
-import org.jboss.gwt.elemento.core.EventType;
-import org.jboss.gwt.elemento.core.Key;
+import org.jboss.elemento.EventType;
+import org.jboss.elemento.Key;
 
 public class GwtGameContext extends GameContext implements EntryPoint {
     public static final int WIDTH = 320;
     public static final int HEIGHT = 200;
-    private final HTMLCanvasElement canvas;
     private final CanvasRenderingContext2D c2d;
-    private final double colors[][] = new double[32][3];
+    private final double[][] colors = new double[32][3];
     private final Set<Input> pressedInputs = EnumSet.noneOf(Input.class);
     private final ImageData buffer;
 
@@ -34,9 +34,10 @@ public class GwtGameContext extends GameContext implements EntryPoint {
         container.classList.add("container");
         document.body.appendChild(container);
 
-        canvas = Js.cast(document.createElement("canvas"));
+        var canvas = Js.<HTMLCanvasElement>cast(document.createElement("canvas"));
         canvas.width = WIDTH; canvas.height = HEIGHT;
-        c2d = Js.cast(canvas.getContext("2d"));
+        //noinspection DataFlowIssue getContext returns non-null on the browser
+        c2d = requireNonNull(Js.cast(canvas.getContext("2d")));
         buffer = c2d.createImageData(WIDTH, HEIGHT);
         container.appendChild(canvas);
 
@@ -77,8 +78,8 @@ public class GwtGameContext extends GameContext implements EntryPoint {
     }
 
     @Override public void setPixel(int x, int y, int color) {
-        var red = y * (WIDTH * 4) + x * 4;
-        buffer.data.setAt(red + 0, colors[color][0]);
+        int red = y * (WIDTH * 4) + x * 4;
+        buffer.data.setAt(red, colors[color][0]);
         buffer.data.setAt(red + 1, colors[color][1]);
         buffer.data.setAt(red + 2, colors[color][2]);
         buffer.data.setAt(red + 3, 255.);
